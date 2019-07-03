@@ -1,0 +1,10 @@
+{"cocktails":[
+{"name": "Screwdriver",
+"ingredients":["orange juice", "vodka"],
+"amounts":[4, 1]
+},
+{"name": "Paloma",
+"ingredients":["tequila", "grapefruit juice", "sparkling water"],
+"amounts":[1, 3, 3]
+}
+]}
