@@ -19,17 +19,24 @@ class Main():
         self.cleanTime = 6
         self.busy_flag = False
 
+        #Mode 0 is GUI, Mode 1 is Buttons
+        self.mode = 1
+
         self.setupPins()
         self.loadPumpMap()
         self.loadCocktails()
-        '''
-        self.buttonThread = threading.Thread(target=self.setupButtons)
-        self.buttonThread.daemon = True
-        self.buttonThread.start()
-        '''
-        self.windowThread = threading.Thread(target=self.createGUI)
-        self.windowThread.start()
-        self.windowThread.join()
+        
+        #Button Mode
+        if(self.mode == 1):
+            self.buttonThread = threading.Thread(target=self.setupButtons)
+            self.buttonThread.daemon = True
+            self.buttonThread.start()
+            self.buttonThread.join()
+
+        if(self.mode == 0):
+            self.windowThread = threading.Thread(target=self.createGUI)
+            self.windowThread.start()
+            self.windowThread.join()
         GPIO.cleanup()
         exit()
 
@@ -175,8 +182,11 @@ class Main():
         GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
         while True:
-            if (GPIO.input(24) == GPIO.HIGH):
-                self.makeCocktail(2)
+            try:
+                if (GPIO.input(24) == GPIO.HIGH):
+                    self.makeCocktail(2)
+            except KeyboardInterrupt:
+                break
 
 
 
