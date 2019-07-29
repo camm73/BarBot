@@ -6,5 +6,9 @@
 {"name": "Paloma",
 "ingredients":["tequila", "grapefruit juice", "sparkling water"],
 "amounts":[1, 3, 3]
+},
+{"name": "Vodka shot",
+"ingredients":["vodka"],
+"amounts":[1]
 }
 ]}

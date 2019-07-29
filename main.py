@@ -15,13 +15,18 @@ class Main():
         self.cocktailButtons = {}
         self.pumpMap = {}
         self.cocktailCount = 0
-        self.pumpTime = 3
+        self.pumpTime = 18
         self.cleanTime = 6
         self.busy_flag = False
 
         self.setupPins()
         self.loadPumpMap()
         self.loadCocktails()
+        '''
+        self.buttonThread = threading.Thread(target=self.setupButtons)
+        self.buttonThread.daemon = True
+        self.buttonThread.start()
+        '''
         self.windowThread = threading.Thread(target=self.createGUI)
         self.windowThread.start()
         self.windowThread.join()
@@ -93,12 +98,16 @@ class Main():
         #Now we need to turn on pumps for respective ingredients for specified times
         i = 0
         waitTime = 0
+        biggestAmt = 0
         for ingredient in self.cocktailIngredients[num]:
             pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient], self.cocktailAmounts[num][i]])
             pumpThread.start()
-            waitTime += self.cocktailAmounts[num][i]
+            if(self.cocktailAmounts[num][i] > biggestAmt):
+                biggestAmt = self.cocktailAmounts[num][i]
             i += 1
         
+        waitTime = biggestAmt*self.pumpTime
+        print('Wait Time: ' + str(waitTime))
         time.sleep(waitTime + 2)
         print("Done making cocktail!")
 
@@ -114,29 +123,60 @@ class Main():
 
     #Cleans Pumps by flushin them for time specified in self.cleanTime
     def cleanPumps(self):
+        '''
         for pump in self.pumps:
             GPIO.output(pump, GPIO.LOW)
             time.sleep(self.cleanTime)
             GPIO.output(pump, GPIO.HIGH)
             print('Cleaned Pump ' + str(pump))
+        '''
+
+        print('Cleaning pumps!')
+        for pump in self.pumps:
+            GPIO.output(pump, GPIO.LOW)
+
+        time.sleep(self.cleanTime)
+
+        for pump in self.pumps:
+            GPIO.output(pump, GPIO.HIGH)
 
     #Creates the GUI interface for selecting a cocktail
     def createGUI(self):
         window = tk.Tk()
         window.grid()
-        window.geometry('800x400')
+        window.geometry('560x270')
         window.title('BarBot - Beta Version 1.0')
         i = 0
+        buttonCol = 0
+        buttonRow = 0
         for drink in self.cocktailNames:
+            if(buttonCol == 3):
+                buttonCol = 0
+                buttonRow += 1
             name = self.cocktailNames[i]
             self.cocktailButtons[i] = tk.Button(window, text=name, width = 20, height =10, command= lambda i=i: self.makeCocktail(i))
-            self.cocktailButtons[i].pack()
+            self.cocktailButtons[i].grid(column=buttonCol, row=buttonRow)
+            buttonCol += 1
             i = i+1
-        stopButton = tk.Button(window, text='STOP', width = 4, height = 2, command=window.destroy)
-        stopButton.pack()
+        buttonCol = 1
+        buttonRow += 1
         cleanButton = tk.Button(window, text='Clean Pumps', width = 8, height = 4, command=self.cleanPumps)
-        cleanButton.pack()
+        cleanButton.grid(row=buttonRow, column=buttonCol)
+        buttonRow += 1
+        stopButton = tk.Button(window, text='STOP', width = 4, height = 2, command=window.destroy)
+        stopButton.grid(row=buttonRow, column=buttonCol)
         window.mainloop()
+
+    def setupButtons(self):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(23, GPIO.OUT)
+        GPIO.output(23, GPIO.HIGH)
+
+        GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+        while True:
+            if (GPIO.input(24) == GPIO.HIGH):
+                self.makeCocktail(2)
 
 
 
