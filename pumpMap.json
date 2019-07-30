@@ -1,1 +1,1 @@
-{"grapefruit juice":1, "tequila":2, "vodka":4, "orange juice":3, "sparkling water":5}
+{"grapefruit juice": {"pump": 1, "volume": "1000"}, "tequila": {"pump": 2, "volume": "750"}, "orange juice": {"pump": 3, "volume": "1000"}, "vodka": {"pump": 4, "volume": "750"}, "sparkling water": {"pump": 5, "volume": "1000"}}

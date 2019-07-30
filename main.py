@@ -18,6 +18,7 @@ class Main():
         self.pumpTime = 18
         self.cleanTime = 6
         self.busy_flag = False
+        self.window = None
 
         #Mode 0 is GUI, Mode 1 is Buttons
         self.setMode()
@@ -90,8 +91,11 @@ class Main():
         with open('pumpMap.json', 'r') as file:
             data = json.load(file)
         
+        mapObject = {}
+        for item in data:
+            mapObject[item] = data[item]["pump"]
         #Store pumpMap data in pumpMap dict
-        self.pumpMap = data
+        self.pumpMap = mapObject
 
     #Function that crafts the cocktail requested
     def makeCocktail(self, num):
@@ -150,10 +154,10 @@ class Main():
 
     #Creates the GUI interface for selecting a cocktail
     def createGUI(self):
-        window = tk.Tk()
-        window.grid()
-        window.geometry('560x270')
-        window.title('BarBot - Beta Version 1.0')
+        self.window = tk.Tk()
+        self.window.grid()
+        self.window.geometry('560x270')
+        self.window.title('BarBot - Beta Version 1.0')
         i = 0
         buttonCol = 0
         buttonRow = 0
@@ -162,18 +166,18 @@ class Main():
                 buttonCol = 0
                 buttonRow += 1
             name = self.cocktailNames[i]
-            self.cocktailButtons[i] = tk.Button(window, text=name, width = 20, height =10, command= lambda i=i: self.makeCocktail(i))
+            self.cocktailButtons[i] = tk.Button(self.window, text=name, width = 20, height =10, command= lambda i=i: self.makeCocktail(i))
             self.cocktailButtons[i].grid(column=buttonCol, row=buttonRow)
             buttonCol += 1
             i = i+1
         buttonCol = 1
         buttonRow += 1
-        cleanButton = tk.Button(window, text='Clean Pumps', width = 8, height = 4, command=self.cleanPumps)
+        cleanButton = tk.Button(self.window, text='Clean Pumps', width = 8, height = 4, command=self.cleanPumps)
         cleanButton.grid(row=buttonRow, column=buttonCol)
         buttonRow += 1
-        stopButton = tk.Button(window, text='STOP', width = 4, height = 2, command=window.destroy)
+        stopButton = tk.Button(self.window, text='STOP', width = 4, height = 2, command=self.window.destroy)
         stopButton.grid(row=buttonRow, column=buttonCol)
-        window.mainloop()
+        self.window.mainloop()
 
     def setupButtons(self):
         GPIO.setmode(GPIO.BCM)
