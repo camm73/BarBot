@@ -20,7 +20,8 @@ class Main():
         self.busy_flag = False
 
         #Mode 0 is GUI, Mode 1 is Buttons
-        self.mode = 1
+        self.setMode()
+        #self.mode = 1
 
         self.setupPins()
         self.loadPumpMap()
@@ -187,6 +188,19 @@ class Main():
                     self.makeCocktail(2)
             except KeyboardInterrupt:
                 break
+
+    
+    def setMode(self):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        time.sleep(0.25)
+        pinInput = GPIO.input(12)
+        print('Mode Input: ' + str(pinInput))
+        if(pinInput != 0):
+            self.mode = 0
+        else:
+            self.mode = 1
+
 
 
 
