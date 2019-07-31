@@ -14,9 +14,11 @@ class Main():
         self.cocktailAmounts = {}
         self.cocktailButtons = {}
         self.pumpMap = {}
+        self.pumpFull = {}
         self.cocktailCount = 0
         self.pumpTime = 18
         self.cleanTime = 6
+        self.shotVolume = 44 #mL
         self.busy_flag = False
         self.window = None
 
@@ -27,6 +29,8 @@ class Main():
         self.setupPins()
         self.loadPumpMap()
         self.loadCocktails()
+
+        #exit()
         
         #Button Mode
         if(self.mode == 1):
@@ -90,6 +94,9 @@ class Main():
         data = {}
         with open('pumpMap.json', 'r') as file:
             data = json.load(file)
+
+        print('Here is the data: ' + str(data))
+        self.pumpFull = data
         
         mapObject = {}
         for item in data:
@@ -114,6 +121,11 @@ class Main():
         for ingredient in self.cocktailIngredients[num]:
             pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient], self.cocktailAmounts[num][i]])
             pumpThread.start()
+
+            #Adjust volume tracking for each of the pumps
+            print('Ingredient: ' + str(ingredient))
+            self.adjustVolumeData(ingredient, self.cocktailAmounts[num][i])
+
             if(self.cocktailAmounts[num][i] > biggestAmt):
                 biggestAmt = self.cocktailAmounts[num][i]
             i += 1
@@ -205,8 +217,18 @@ class Main():
         else:
             self.mode = 1
 
+    def adjustVolumeData(self, ingredientName, shotAmount):
+        print('Value: ' + self.pumpFull[ingredientName]['volume'])
+        newVal = int(self.pumpFull[ingredientName]['volume']) - (self.shotVolume*shotAmount)
+        print('New Value: ' + str(newVal))
+        self.pumpFull[ingredientName]['volume'] = str(newVal)
+        self.writePumpData()
 
 
+    def writePumpData(self):
+        with open('pumpMap.json', 'w') as file:
+            json.dump(self.pumpFull, file)
+        
 
 if __name__ == '__main__':
     main = Main()
