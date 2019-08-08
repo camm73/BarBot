@@ -198,8 +198,9 @@ class Main():
             json.dump(self.pumpFull, file)
         
 
+'''
 if __name__ == '__main__':
     main = Main()
     GPIO.cleanup()
     print('Done')
-        
+'''

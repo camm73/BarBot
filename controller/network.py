@@ -1,5 +1,7 @@
 from flask import request, url_for
 from flask_api import FlaskAPI, status, exceptions
+from main import Main
+import threading
 
 app = FlaskAPI(__name__)
 
@@ -7,5 +9,13 @@ app = FlaskAPI(__name__)
 def callMakeCocktail(name):
     pass
 
+def startAPI():
+    app.run(debug=False)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    apiThread = threading.Thread(target=startAPI)
+    apiThread.daemon = True
+    apiThread.start()
+    #This will be where we will instantiate the controller from
+    main = Main()
+    print('Exitting!')
