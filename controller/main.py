@@ -13,6 +13,7 @@ class Main():
         self.cocktailIngredients = {}
         self.cocktailAmounts = {}
         self.cocktailButtons = {}
+        self.cocktailNumbers = {}
         self.pumpMap = {}
         self.pumpFull = {}
         self.cocktailCount = 0
@@ -28,17 +29,14 @@ class Main():
         self.setupPins()
         self.loadPumpMap()
         self.loadCocktails()
-        
+
         #Button Mode
         if(self.mode == 1):
             self.buttonThread = threading.Thread(target=self.setupButtons)
             self.buttonThread.daemon = True
             self.buttonThread.start()
-            self.buttonThread.join()
         elif(self.mode == 0):
             print("GUI MODE!")
-        GPIO.cleanup()
-        exit()
 
     #Sets up pins by setting gpio mode and setting initial output
     def setupPins(self):
@@ -79,6 +77,7 @@ class Main():
             self.cocktailNames[i] = (str(data['cocktails'][i]['name']))
             self.cocktailIngredients[i] = data['cocktails'][i]['ingredients']
             self.cocktailAmounts[i] = data['cocktails'][i]['amounts']
+            self.cocktailNumbers[str(data['cocktails'][i]['name'])] = i
             i = i+1
         self.cocktailCount = i
 
