@@ -14,6 +14,7 @@ class Main():
         self.cocktailAmounts = {}
         self.cocktailButtons = {}
         self.cocktailNumbers = {}
+        self.cocktailAvailable = {}
         self.pumpMap = {}
         self.pumpFull = {}
         self.cocktailCount = 0
@@ -78,9 +79,20 @@ class Main():
             self.cocktailIngredients[i] = data['cocktails'][i]['ingredients']
             self.cocktailAmounts[i] = data['cocktails'][i]['amounts']
             self.cocktailNumbers[str(data['cocktails'][i]['name'])] = i
+            self.cocktailAvailable[str(data['cocktails'][i]['name'])] = self.isAvailable(str(data['cocktails'][i]['name']))
+            print(self.cocktailAvailable[str(data['cocktails'][i]['name'])])
             i = i+1
         self.cocktailCount = i
 
+    #Scans through the ingredients on each pump and the ingredients needed for this cocktail to determine availability
+    def isAvailable(self, cocktailName):
+        cocktailNumber = self.cocktailNumbers[cocktailName]
+        
+        for ingredient in self.cocktailIngredients[cocktailNumber]:
+            if(ingredient not in self.pumpMap.keys()):
+                print(ingredient + " not available!")
+                return False
+        return True
     
     #Loads pump/ingredient map from json file
     def loadPumpMap(self):
@@ -102,7 +114,14 @@ class Main():
         if(self.busy_flag):
             #TODO add some feedback message
             print('Busy making cocktail!')
-            return
+            return False
+        cocktailName = self.cocktailNames[num]
+        
+        #Check whether the cocktail is available or not
+        if(not self.cocktailAvailable[cocktailName]):
+            print('This cocktail is not avialable!')
+            return False
+
         print('Making cocktail ' + str(self.cocktailNames[num]))
         self.busy_flag = True
         self.setupPins()
@@ -129,6 +148,7 @@ class Main():
         print("Done making cocktail!")
 
         self.busy_flag = False
+        return True
 
     #Toggles specific pumps for specific amount of time
     def pumpToggle(self, num, amt):

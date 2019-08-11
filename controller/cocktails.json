@@ -10,5 +10,9 @@
 {"name": "vodka shot",
 "ingredients":["vodka"],
 "amounts":[1]
+},
+{"name": "naked and famous",
+"ingredients":["mezcal", "yellow chartreuse", "aperol", "lime juice"],
+"amounts":[1, 1, 1, 1]
 }
 ]}

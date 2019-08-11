@@ -9,16 +9,29 @@ main = Main()
 
 @app.route('/<string:name>/', methods=['GET'])
 def callMakeCocktail(name):
-    main.makeCocktail(main.cocktailNumbers[name])
+    res = main.makeCocktail(main.cocktailNumbers[name])
+    if(res == False):
+        return "Issues making cocktail: " + name + "\n"
     return 'Making cocktail ' + name + '\n'
+
+@app.route('/cocktailList/', methods=['GET'])
+def getCocktailList():
+    availableCocktails = []
+    count = 0
+    for i in main.cocktailNames:
+        cocktailName = main.cocktailNames[i]
+
+        if(main.cocktailAvailable[cocktailName]):
+            availableCocktails.append(cocktailName)
+            count += 1
+        else:
+            print('Cocktail: ' + cocktailName + ' is not available!')
+    return availableCocktails
+
 
 def startAPI():
     app.run(debug=False)
 
-@app.route('/test', methods=['GET'])
-def test():
-    main.makeCocktail(2)
-    return "Pouring shot"
 
 if __name__ == "__main__":
     apiThread = threading.Thread(target=startAPI)
