@@ -34,9 +34,10 @@ class Display():
         self.window.grid()
         self.window.geometry('480x320')
         self.window.title('BarBot - Beta Version 1.0')
+        i = 0
         buttonCol = 0
         buttonRow = 0
-        for i in self.cocktailNames:
+        for drink in self.cocktailNames:
             if(buttonCol == 3):
                 buttonCol = 0
                 buttonRow += 1
