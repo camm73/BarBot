@@ -121,7 +121,12 @@ class Main():
         if(not self.cocktailAvailable[cocktailName]):
             print('This cocktail is not avialable!')
             return False
-
+        
+        #Check whether there are enough ingredients
+        if(not self.canMakeCocktail(cocktailName)):
+            print('Not enough ingredients to make this cocktail.')
+            return False
+        
         print('Making cocktail ' + str(self.cocktailNames[num]))
         self.busy_flag = True
         self.setupPins()
@@ -157,6 +162,7 @@ class Main():
         GPIO.output(pumpPin, GPIO.LOW)
         time.sleep(self.pumpTime*amt)
         GPIO.output(pumpPin, GPIO.HIGH)
+
 
     #Cleans Pumps by flushin them for time specified in self.cleanTime
     def cleanPumps(self):
@@ -210,6 +216,19 @@ class Main():
         print('New Value: ' + str(newVal))
         self.pumpFull[ingredientName]['volume'] = str(newVal)
         self.writePumpData()
+
+    
+    def canMakeCocktail(self, name):
+        cocktailNum = self.cocktailNumbers[name]
+        i = 0
+        for ingredient in self.cocktailIngredients[cocktailNum]:
+            availableAmt = int(self.pumpFull[ingredient]['volume'])
+            needAmt = int(self.cocktailAmounts[cocktailNum][i])*self.shotVolume
+            print('Ingredient: ' + name + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
+            if((availableAmt - needAmt) < 0):
+                return False
+        return True
+
 
 
     def writePumpData(self):
