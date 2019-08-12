@@ -74,7 +74,12 @@ class Display():
 
 
     def getIpAddress(self):
-        return socket.gethostbyname('barbot.local')
+        try:
+            addr = socket.gethostbyname('barbot.local')
+            return addr
+        except socket.herror:
+            print('ERROR RESOLVING BARBOT HOSTNAME!')
+            exit()
 
 if __name__ == "__main__":
     display = Display()
