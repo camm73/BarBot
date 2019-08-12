@@ -1,1 +1,1 @@
-{"grapefruit juice": {"pump": 1, "volume": "472"}, "tequila": {"pump": 2, "volume": "574"}, "orange juice": {"pump": 3, "volume": "1000"}, "vodka": {"pump": 4, "volume": "178"}, "sparkling water": {"pump": 5, "volume": "472"}}
+{"grapefruit juice": {"pump": 1, "volume": "472", "originalVolume": "1000"}, "tequila": {"pump": 2, "volume": "574", "originalVolume": "750"}, "orange juice": {"pump": 3, "volume": "1000", "originalVolume": "1000"}, "vodka": {"pump": 4, "volume": "134", "originalVolume": "750"}, "sparkling water": {"pump": 5, "volume": "472", "originalVolume": "1000"}}

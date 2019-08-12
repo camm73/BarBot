@@ -110,12 +110,12 @@ class Main():
         self.pumpMap = mapObject
 
     #Function that crafts the cocktail requested
-    def makeCocktail(self, num):
+    def makeCocktail(self, cocktailName):
         if(self.busy_flag):
             #TODO add some feedback message
             print('Busy making cocktail!')
             return False
-        cocktailName = self.cocktailNames[num]
+        num = self.cocktailNumbers[cocktailName]
         
         #Check whether the cocktail is available or not
         if(not self.cocktailAvailable[cocktailName]):
@@ -188,7 +188,7 @@ class Main():
         while True:
             try:
                 if (GPIO.input(24) == GPIO.HIGH):
-                    self.makeCocktail(2)
+                    self.makeCocktail('vodka shot')
             except KeyboardInterrupt:
                 break
 
