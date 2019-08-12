@@ -3,6 +3,7 @@ import time
 import json
 import tkinter as tk
 import requests
+import urllib.parse
 
 class Display():
     
@@ -13,13 +14,14 @@ class Display():
     def __init__(self):
         self.cocktailButtons = {}
         self.window = None
+        self.controllerHost = 'http://192.168.1.131:5000'
         self.cocktailNames = []
         self.getCocktailNames()
         self.createGUI()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
-        res = requests.get('http://192.168.1.131:5000/cocktailList/')
+        res = requests.get(self.controllerHost + '/cocktailList/')
         
         if(res.status_code != 200):
             print('There was an error!')
@@ -27,6 +29,20 @@ class Display():
         else:
             self.cocktailNames = res.json()
             print(self.cocktailNames)
+
+    def makeCocktail(self, name):
+        urlName = urllib.parse.quote(name)
+        res = requests.get(self.controllerHost + '/' + urlName + '/')
+
+        if(res.status_code != 200):
+            print('There was an error!')
+
+
+    def cleanPumps(self):
+        res = requests.get(self.controllerHost + '/clean/')
+
+        if(res.status_code != 200):
+            print('There was an error!')
 
     #Creates the GUI interface for selecting a cocktail
     def createGUI(self):

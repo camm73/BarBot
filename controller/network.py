@@ -14,6 +14,12 @@ def callMakeCocktail(name):
         return "Issues making cocktail: " + name + "\n"
     return 'Making cocktail ' + name + '\n'
 
+@app.route('/clean/', methods=['GET'])
+def callCleanPumps():
+    main.cleanPumps()
+    
+    return "Cleaning pumps!"
+
 @app.route('/cocktailList/', methods=['GET'])
 def getCocktailList():
     availableCocktails = []
