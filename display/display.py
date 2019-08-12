@@ -17,9 +17,8 @@ class Display():
         self.window = None
         self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
         self.cocktailNames = []
-        print(self.controllerHost)
         self.getCocktailNames()
-        #self.createGUI()
+        self.createGUI()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
