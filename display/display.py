@@ -4,6 +4,7 @@ import json
 import tkinter as tk
 import requests
 import urllib.parse
+import socket
 
 class Display():
     
@@ -14,10 +15,11 @@ class Display():
     def __init__(self):
         self.cocktailButtons = {}
         self.window = None
-        self.controllerHost = 'http://192.168.1.131:5000'
+        self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
         self.cocktailNames = []
+        print(self.controllerHost)
         self.getCocktailNames()
-        self.createGUI()
+        #self.createGUI()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
@@ -70,6 +72,10 @@ class Display():
         stopButton = tk.Button(self.window, text='STOP', width = 4, height = 2, command=self.window.destroy)
         stopButton.grid(row=buttonRow, column=buttonCol)
         self.window.mainloop()
+
+
+    def getIpAddress(self):
+        return socket.gethostbyname('barbot.local')
 
 if __name__ == "__main__":
     display = Display()
