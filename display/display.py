@@ -75,9 +75,9 @@ class Display():
 
     def getIpAddress(self):
         try:
-            addr = socket.gethostbyname('barbot.local')
+            addr = socket.gethostbyname('barbot')
             return addr
-        except socket.herror:
+        except socket.gaierror:
             print('ERROR RESOLVING BARBOT HOSTNAME!')
             exit()
 
