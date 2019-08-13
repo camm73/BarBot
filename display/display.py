@@ -109,11 +109,9 @@ def startAPI():
 
 
 if __name__ == "__main__":
-    '''
     apiThread = threading.Thread(target=startAPI)
     apiThread.daemon = True
     apiThread.start()
     display = Display()
-    '''
     print('Exitting...')
     
