@@ -5,6 +5,11 @@ import tkinter as tk
 import requests
 import urllib.parse
 import socket
+import subprocess
+from flask import request, url_for
+from flask_api import FlaskAPI, status, exceptions
+
+app = FlaskAPI(__name__)
 
 class Display():
     
@@ -18,7 +23,9 @@ class Display():
         self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
         self.cocktailNames = []
         self.getCocktailNames()
-        self.createGUI()
+        #self.createGUI()
+        while True:
+            pass
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
@@ -76,12 +83,30 @@ class Display():
     def getIpAddress(self):
         try:
             addr = socket.gethostbyname('barbot')
+            print('Controller IP Address: ' + addr)
             return addr
         except socket.gaierror:
             print('ERROR RESOLVING BARBOT HOSTNAME!')
-            exit()
+            exit(1)
+    
+
+@app.route('/offline/', methods=['GET'])
+def goOffline():
+    subprocess.call(['./goOffline'])
+
+@app.route('/online/', methods=['GET'])
+def goOnline():
+    subprocess.call(['./goOnline'])
+
+def startAPI():
+    app.run(debug=False, host='0.0.0.0')
+    print('API Started!')
+
 
 if __name__ == "__main__":
+    apiThread = threading.Thread(target=startAPI)
+    apiThread.daemon = True
+    apiThread.start()
     display = Display()
     print('Exitting...')
     
