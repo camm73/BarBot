@@ -22,10 +22,10 @@ class Display():
         self.window = None
         self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
         self.cocktailNames = []
-        self.getCocktailNames()
-        #self.createGUI()
         while True:
             pass
+        self.getCocktailNames()
+        #self.createGUI()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
@@ -104,9 +104,11 @@ def startAPI():
 
 
 if __name__ == "__main__":
+    '''
     apiThread = threading.Thread(target=startAPI)
     apiThread.daemon = True
     apiThread.start()
     display = Display()
+    '''
     print('Exitting...')
     
