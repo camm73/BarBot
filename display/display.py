@@ -7,6 +7,7 @@ import urllib.parse
 import subprocess
 import socket
 import subprocess
+import threading
 from flask import request, url_for
 from flask_api import FlaskAPI, status, exceptions
 
@@ -24,10 +25,8 @@ class Display():
         self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
         print('Host address is: ' + self.controllerHost)
         self.cocktailNames = []
-        while True:
-            pass
         self.getCocktailNames()
-        #self.createGUI()
+        self.createGUI()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
