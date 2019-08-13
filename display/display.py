@@ -6,10 +6,9 @@ import requests
 import urllib.parse
 import subprocess
 import socket
-import threading
+import subprocess
 from flask import request, url_for
 from flask_api import FlaskAPI, status, exceptions
-
 
 app = FlaskAPI(__name__)
 
@@ -25,8 +24,10 @@ class Display():
         self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
         print('Host address is: ' + self.controllerHost)
         self.cocktailNames = []
+        while True:
+            pass
         self.getCocktailNames()
-        self.createGUI()
+        #self.createGUI()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
@@ -89,27 +90,31 @@ class Display():
         try:
             print('Retrieving ip address...')
             addr = socket.gethostbyname('barbot')
-            print('Got address: ' + str(addr))
+            print('Controller IP Address: ' + addr)
             return addr
         except socket.gaierror:
             print('ERROR RESOLVING BARBOT HOSTNAME!')
             exit(1)
 
-@app.route('/online/', methods=['GET'])
-def goOnline():
-    subprocess.call(['./goOnline'])
-
 @app.route('/offline/', methods=['GET'])
 def goOffline():
     subprocess.call(['./goOffline'])
 
+@app.route('/online/', methods=['GET'])
+def goOnline():
+    subprocess.call(['./goOnline'])
+
 def startAPI():
     app.run(debug=False, host='0.0.0.0')
+    print('API Started!')
+
 
 if __name__ == "__main__":
+    '''
     apiThread = threading.Thread(target=startAPI)
     apiThread.daemon = True
     apiThread.start()
     display = Display()
+    '''
     print('Exitting...')
     
