@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd /etc/
+sudo systemctl start hostapd
+
+sudo cp dhcpcd.offline dhcpcd.conf
+
+sudo reboot
+
+exit 0
