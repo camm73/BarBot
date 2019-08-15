@@ -1,0 +1,7 @@
+cd /etc/wpa_supplicant/
+
+sudo mv wpa_supplicant.offline wpa_supplicant.conf
+
+sleep 10
+
+sudo reboot
