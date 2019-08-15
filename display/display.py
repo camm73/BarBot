@@ -97,11 +97,23 @@ class Display():
 
 @app.route('/offline/', methods=['GET'])
 def goOffline():
-    subprocess.call(['./goOffline'])
+    offlineThread = threading.Thread(target=executeOffline)
+    offlineThread.daemon = True
+    offlineThread.start()
 
 @app.route('/online/', methods=['GET'])
 def goOnline():
+    onlineThread = threading.Thread(target=executeOnline)
+    onlineThread.daemon = True
+    onlineThread.start()
+
+def executeOnline():
+    time.sleep(5)
     subprocess.call(['./goOnline'])
+
+def executeOffline():
+    time.sleep(5)
+    subprocess.call(['./goOffline'])
 
 def startAPI():
     app.run(debug=False, host='0.0.0.0')
