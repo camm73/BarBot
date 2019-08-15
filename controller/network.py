@@ -3,9 +3,13 @@ from flask_api import FlaskAPI, status, exceptions
 from main import Main
 import threading
 import time
+import subprocess
+import requests
 
 app = FlaskAPI(__name__)
 main = Main()
+
+host = 'http://barbotdisplay:5000'
 
 @app.route('/<string:name>/', methods=['GET'])
 def callMakeCocktail(name):
@@ -50,11 +54,41 @@ def getIngredientVolume(ingredient):
 
 @app.route('/offline/', methods=['GET'])
 def goOffline():
-    pass
+    try:
+        res = requests.get(host + '/offline/')
+
+        if(res.status_code != 200):
+            print('There was an error!')
+            return
+
+        time.sleep(5)
+
+        subprocess.call(['./goOffline'])
+        print('Going offline')
+
+    except Exception as error:
+        print(error)
+        print('Going offline failed')
+        exit(1)
 
 @app.route('/online/', methods=['GET'])
 def goOnline():
-    pass
+    #Call display's goOnline REST endpoint first
+    try:
+        res = requests.get(host + '/online/')
+
+        if(res.status_code != 200):
+            print('There was an error!')
+            return
+
+        time.sleep(5)
+
+        subprocess.call(['./goOnline'])
+        print('Going online')
+
+    except Exception:
+        print('Going online failed')
+        exit(1)
 
 def startAPI():
     app.run(debug=False, host='0.0.0.0')
