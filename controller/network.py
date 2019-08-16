@@ -57,10 +57,6 @@ def goOffline():
     try:
         res = requests.get(host + '/offline/')
 
-        if(res.status_code != 200):
-            print('There was an error!')
-            return
-
         time.sleep(5)
 
         subprocess.call(['./goOffline'])
@@ -77,17 +73,14 @@ def goOnline():
     try:
         res = requests.get(host + '/online/')
 
-        if(res.status_code != 200):
-            print('There was an error!')
-            return
-
         time.sleep(5)
 
         subprocess.call(['./goOnline'])
         print('Going online')
 
-    except Exception:
+    except Exception as error:
         print('Going online failed')
+        print(error)
         exit(1)
 
 def startAPI():

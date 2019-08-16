@@ -10,6 +10,7 @@ import subprocess
 import threading
 from flask import request, url_for
 from flask_api import FlaskAPI, status, exceptions
+import traceback
 
 app = FlaskAPI(__name__)
 
@@ -101,15 +102,25 @@ def goOffline():
     offlineThread.daemon = True
     offlineThread.start()
 
+    return status.HTTP_200_OK
+
 @app.route('/online/', methods=['GET'])
 def goOnline():
-    onlineThread = threading.Thread(target=executeOnline)
-    onlineThread.daemon = True
-    onlineThread.start()
+    try:
+        onlineThread = threading.Thread(target=executeOnline)
+        onlineThread.daemon = True
+        onlineThread.start()
+    except Exception as e:
+        print(e)
+        traceback.print_stack()
+    
+    return status.HTTP_200_OK
 
 def executeOnline():
+    print('HERE')
     time.sleep(5)
     subprocess.call(['./goOnline'])
+    print('After Here')
 
 def executeOffline():
     time.sleep(5)
