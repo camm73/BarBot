@@ -1,6 +1,6 @@
 #!/bin/bash
 
-until python3 display.py; do
+until python3 /home/pi/BarBotOffline/display/display.py; do
 	echo "Restarting"
 done
 exit 0
