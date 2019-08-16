@@ -9,8 +9,6 @@ import requests
 app = FlaskAPI(__name__)
 main = Main()
 
-host = 'http://barbotdisplay:5000'
-
 @app.route('/<string:name>/', methods=['GET'])
 def callMakeCocktail(name):
     res = main.makeCocktail(name)
@@ -55,7 +53,7 @@ def getIngredientVolume(ingredient):
 @app.route('/offline/', methods=['GET'])
 def goOffline():
     try:
-        res = requests.get(host + '/offline/')
+        res = requests.get('http://barbotdisplay:5000/offline/')
 
         time.sleep(5)
 
@@ -71,7 +69,7 @@ def goOffline():
 def goOnline():
     #Call display's goOnline REST endpoint first
     try:
-        res = requests.get(host + '/online/')
+        res = requests.get('http://192.168.4.1:5000/online/')
 
         time.sleep(5)
 
