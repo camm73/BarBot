@@ -2,9 +2,9 @@
 
 cd /etc/
 sudo systemctl start hostapd
-sleep 3
+sleep 2
 sudo cp dhcpcd.offline dhcpcd.conf
-sleep 3
+sleep 1
 sudo reboot
 
 exit 0

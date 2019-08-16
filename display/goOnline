@@ -2,9 +2,9 @@
 
 cd /etc/
 sudo systemctl stop hostapd
-sleep 3
+sleep 2
 sudo cp dhcpcd.online dhcpcd.conf
-sleep 3
+sleep 1
 sudo reboot
 
 exit 0

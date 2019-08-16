@@ -4,6 +4,6 @@ cd /etc/wpa_supplicant/
 
 sudo cp wpa_supplicant.online wpa_supplicant.conf
 
-sleep 10
+sleep 1
 
 sudo reboot
