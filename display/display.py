@@ -83,6 +83,12 @@ class Display():
         buttonRow += 1
         stopButton = tk.Button(self.window, text='STOP', width = 4, height = 2, command=self.window.destroy)
         stopButton.grid(row=buttonRow, column=buttonCol)
+        buttonRow += 1
+        offlineButton = tk.Button(self.window, text='Go Offline', width = 4, height = 2, command=goOffline)
+        offlineButton.grid(row=buttonRow, column=buttonCol)
+        buttonCol += 1
+        onlineButton = tk.Button(self.window, text='Go Online', width = 4, height = 2, command=goOnline)
+        onlineButton.grid(row=buttonRow, column=buttonCol)
         self.window.mainloop()
 
 
