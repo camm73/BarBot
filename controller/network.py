@@ -59,7 +59,7 @@ def goOffline():
 
         time.sleep(5)
 
-        subprocess.call(['./goOffline'])
+        subprocess.call(['/home/pi/BarBotOffline/controller/goOffline'])
         print('Going offline')
 
     except Exception as error:
@@ -75,7 +75,7 @@ def goOnline():
 
         time.sleep(5)
 
-        subprocess.call(['./goOnline'])
+        subprocess.call(['/home/pi/BarBotOffline/controller/goOnline'])
         print('Going online')
 
     except Exception as error:

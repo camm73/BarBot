@@ -140,12 +140,12 @@ def goOnline():
 def executeOnline():
     print('HERE')
     time.sleep(5)
-    subprocess.call(['./goOnline'])
+    subprocess.call(['/home/pi/BarBotOffline/display/goOnline'])
     print('After Here')
 
 def executeOffline():
     time.sleep(5)
-    subprocess.call(['./goOffline'])
+    subprocess.call(['/home/pi/BarBotOffline/display/goOffline'])
 
 def startAPI():
     app.run(debug=False, host='0.0.0.0')
