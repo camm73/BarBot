@@ -84,13 +84,28 @@ class Display():
         stopButton = tk.Button(self.window, text='STOP', width = 4, height = 2, command=self.window.destroy)
         stopButton.grid(row=buttonRow, column=buttonCol)
         buttonRow += 1
-        offlineButton = tk.Button(self.window, text='Go Offline', width = 4, height = 2, command=goOffline)
+        buttonCol -=1
+        offlineButton = tk.Button(self.window, text='Go Offline', width = 6, height = 2, command=self.triggerControllerOffline)
         offlineButton.grid(row=buttonRow, column=buttonCol)
         buttonCol += 1
-        onlineButton = tk.Button(self.window, text='Go Online', width = 4, height = 2, command=goOnline)
+        onlineButton = tk.Button(self.window, text='Go Online', width = 6, height = 2, command=self.triggerControllerOnline)
         onlineButton.grid(row=buttonRow, column=buttonCol)
         self.window.mainloop()
 
+
+    def triggerControllerOffline(self):
+        try:
+            res = requests.get(self.controllerHost + '/offline/')
+        except Exception:
+            print('Error going offline')
+            exit(1)
+
+    def triggerControllerOnline(self):
+        try:
+            res = requests.get(self.controllerHost + '/online/')
+        except Exception:
+            print('Error going online')
+            exit(1)
 
     def getIpAddress(self):
         try:
