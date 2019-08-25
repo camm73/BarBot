@@ -9,6 +9,8 @@ class Main():
 
     def __init__(self):
         self.pumps = [26, 19, 13, 6, 5, 21, 20, 16]
+        self.polarityPins = [17, 27] #Pin 17 is #1 and Pin #27 is #2
+        self.polarityNormal = True
         self.cocktailNames = {}
         self.cocktailIngredients = {}
         self.cocktailAmounts = {}
@@ -47,6 +49,14 @@ class Main():
             for pin in self.pumps:
                 GPIO.setup(pin, GPIO.OUT)
                 GPIO.output(pin, GPIO.HIGH)
+
+            #Turn on signal for #1 relay
+            GPIO.setup(self.polarityPins[0], GPIO.OUT)
+            GPIO.output(self.polarityPins[0], GPIO.LOW)
+
+            # Turn off signal for #2 relay
+            GPIO.setup(self.polarityPins[1], GPIO.OUT)
+            GPIO.output(self.polarityPins[1], GPIO.HIGH)
             print("Pins successfully setup!")
         except Exception as e:
             print("Error setting up pump pins: " + str(e))
@@ -163,6 +173,42 @@ class Main():
         time.sleep(self.pumpTime*amt)
         GPIO.output(pumpPin, GPIO.HIGH)
 
+    #Turns on a specific pump for indefinite amount of time
+    def pumpOn(self, num):
+        pumpPinIndex = num - 1
+        pumpPin = self.pumps[pumpPinIndex]
+        print('Turning on pump: ' + str(num))
+        GPIO.output(pumpPin, GPIO.LOW)
+
+    #Turns off a specific pump for indefinite amount of time
+    def pumpOff(self, num):
+        pumpPinIndex = num - 1
+        pumpPin = self.pumps[pumpPinIndex]
+        print("Turning off pump: " + str(num))
+        GPIO.output(pumpPin, GPIO.HIGH)
+
+    
+    #Reverse the polarity of the motors
+    def reversePolarity(self):
+        if(self.polarityNormal):
+            #Turn off signal for #1 relay
+            GPIO.output(self.polarityPins[0], GPIO.HIGH)
+
+            #Turn on signal for #2 relay
+            GPIO.output(self.polarityPins[1], GPIO.LOW)
+            self.polarityNormal = False
+        else:
+            #Turn on signal for #1 relay
+            GPIO.output(self.polarityPins[0], GPIO.LOW)
+
+            # Turn off signal for #2 relay
+            GPIO.output(self.polarityPins[1], GPIO.HIGH)
+
+            self.polarityNormal = True
+        
+        print('Done reversing polarities!')
+        return self.polarityNormal
+
 
     #Cleans Pumps by flushin them for time specified in self.cleanTime
     def cleanPumps(self):
@@ -193,8 +239,11 @@ class Main():
 
         while True:
             try:
+                '''
                 if (GPIO.input(24) == GPIO.HIGH):
+                    print('This GPIO was triggered')
                     self.makeCocktail('vodka shot')
+                '''
             except KeyboardInterrupt:
                 break
 

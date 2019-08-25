@@ -40,6 +40,22 @@ def getCocktailList():
 def getAllVolumes():
     return main.pumpFull
 
+@app.route('/pumpOn/<int:num>/', methods=['GET'])
+def pumpOn(num):
+    main.pumpOn(num)
+    return "Pump on!\n"
+
+@app.route('/pumpOff/<int:num>/', methods=['GET'])
+def pumpOff(num):
+    main.pumpOff(num)
+    return "Pump off!\n"
+
+@app.route('/reverse/', methods=['GET'])
+def reversePolarity():
+    polarityNormal = main.reversePolarity()
+    print('polarityNormal: ' + str(polarityNormal))
+    return str(polarityNormal) + '\n'
+
 @app.route('/volume/<string:ingredient>/', methods=['GET'])
 def getIngredientVolume(ingredient):
     vol = {}
