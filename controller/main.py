@@ -18,6 +18,7 @@ class Main():
         self.cocktailNumbers = {}
         self.cocktailAvailable = {}
         self.pumpMap = {}
+        self.pumpNumbers = {}
         self.pumpFull = {}
         self.cocktailCount = 0
         self.pumpTime = 18
@@ -104,7 +105,7 @@ class Main():
                 return False
         return True
     
-    #Loads pump/ingredient map from json file
+    #Loads pump/ingredient map from json file (ALSO SET PUMP NUMBERS)
     def loadPumpMap(self):
         data = {}
         with open('pumpMap.json', 'r') as file:
@@ -116,6 +117,7 @@ class Main():
         mapObject = {}
         for item in data:
             mapObject[item] = data[item]["pump"]
+            self.pumpNumbers[data[item]["pump"]] = item
         #Store pumpMap data in pumpMap dict
         self.pumpMap = mapObject
 
@@ -288,6 +290,14 @@ class Main():
             i += 1
         
         return retIngredients
+
+    def getBottlePercentage(self, bottleNum):
+        bottleName = self.pumpNumbers[bottleNum]
+        now = int(self.pumpFull[bottleName]['volume'])
+        full = int(self.pumpFull[bottleName]['originalVolume'])
+        percent = (now/full)*100
+
+        return str(int(percent))
 
     def writePumpData(self):
         with open('pumpMap.json', 'w') as file:

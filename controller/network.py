@@ -47,6 +47,10 @@ def getCocktailList():
 def getAllVolumes():
     return main.pumpFull
 
+@app.route('/bottlePercent/<int:num>/', methods=['GET'])
+def getBottleVolume(num):
+    return main.getBottlePercentage(num)
+
 @app.route('/pumpOn/<int:num>/', methods=['GET'])
 def pumpOn(num):
     main.pumpOn(num)
