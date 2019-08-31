@@ -22,6 +22,13 @@ def callCleanPumps():
     
     return "Cleaning pumps!"
 
+@app.route('/ingredients/<string:cocktail>/')
+def getIngredients(cocktail):
+    res = main.getIngredients(cocktail)
+    print(res)
+
+    return res
+
 @app.route('/cocktailList/', methods=['GET'])
 def getCocktailList():
     availableCocktails = []

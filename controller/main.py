@@ -278,7 +278,16 @@ class Main():
                 return False
         return True
 
-
+    
+    def getIngredients(self, name):
+        cocktailNum = self.cocktailNumbers[name]
+        retIngredients = {}
+        i = 0
+        for ingredient in self.cocktailIngredients[cocktailNum]:
+            retIngredients[ingredient] = self.cocktailAmounts[cocktailNum][i]
+            i += 1
+        
+        return retIngredients
 
     def writePumpData(self):
         with open('pumpMap.json', 'w') as file:
