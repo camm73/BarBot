@@ -302,6 +302,9 @@ class Main():
             print(e)
             return 'N/A'
 
+    def getBottleName(self, bottleNum):
+        return self.pumpNumbers[bottleNum]
+
     def writePumpData(self):
         with open('pumpMap.json', 'w') as file:
             json.dump(self.pumpFull, file)

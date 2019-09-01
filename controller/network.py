@@ -29,6 +29,11 @@ def getIngredients(cocktail):
 
     return res
 
+@app.route('/getBottleName/<int:num>/', methods=['GET'])
+def getBottleName(num):
+    return main.getBottleName(num)
+
+
 @app.route('/cocktailList/', methods=['GET'])
 def getCocktailList():
     availableCocktails = []
