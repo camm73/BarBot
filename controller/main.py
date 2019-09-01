@@ -292,12 +292,15 @@ class Main():
         return retIngredients
 
     def getBottlePercentage(self, bottleNum):
-        bottleName = self.pumpNumbers[bottleNum]
-        now = int(self.pumpFull[bottleName]['volume'])
-        full = int(self.pumpFull[bottleName]['originalVolume'])
-        percent = (now/full)*100
-
-        return str(int(percent))
+        try:
+            bottleName = self.pumpNumbers[bottleNum]
+            now = int(self.pumpFull[bottleName]['volume'])
+            full = int(self.pumpFull[bottleName]['originalVolume'])
+            percent = (now/full)*100
+            return str(int(percent))
+        except Exception as e:
+            print(e)
+            return 'N/A'
 
     def writePumpData(self):
         with open('pumpMap.json', 'w') as file:
