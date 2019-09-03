@@ -35,6 +35,11 @@ def getBottleName(num):
     return main.getBottleName(num)
 
 
+@app.route('/heartbeat/', methods=['GET'])
+def heartbeat():
+    return "online"
+
+
 @app.route('/cocktailList/', methods=['GET'])
 def getCocktailList():
     availableCocktails = []
