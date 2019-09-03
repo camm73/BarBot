@@ -303,7 +303,13 @@ class Main():
             return 'N/A'
 
     def getBottleName(self, bottleNum):
-        return self.pumpNumbers[bottleNum]
+        try:
+            bottleName = self.pumpNumbers[bottleNum]
+            print(bottleName)
+            return bottleName
+        except Exception as e:
+            print(e)
+            return 'N/A'
 
     def writePumpData(self):
         with open('pumpMap.json', 'w') as file:
