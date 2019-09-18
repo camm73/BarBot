@@ -40,6 +40,16 @@ def heartbeat():
     return "online"
 
 
+@app.route('/volume/<string:bottleName>/', methods=['GET'])
+def getBottleVolume(bottleName):
+    return str(main.getBottleVolume(bottleName))
+
+
+@app.route('/initVolume/<string:bottleName>/', methods=['GET'])
+def getBottleInitVolume(bottleName):
+    return str(main.getBottleInitVolume(bottleName))
+
+
 @app.route('/cocktailList/', methods=['GET'])
 def getCocktailList():
     availableCocktails = []
@@ -59,7 +69,7 @@ def getAllVolumes():
     return main.pumpFull
 
 @app.route('/bottlePercent/<int:num>/', methods=['GET'])
-def getBottleVolume(num):
+def getBottlePercent(num):
     return main.getBottlePercentage(num)
 
 @app.route('/pumpOn/<int:num>/', methods=['GET'])

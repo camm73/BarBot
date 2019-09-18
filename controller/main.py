@@ -294,13 +294,23 @@ class Main():
     def getBottlePercentage(self, bottleNum):
         try:
             bottleName = self.pumpNumbers[bottleNum]
-            now = int(self.pumpFull[bottleName]['volume'])
-            full = int(self.pumpFull[bottleName]['originalVolume'])
+            now = self.getBottleVolume(bottleName)
+            full = self.getBottleInitVolume(bottleName)
             percent = (now/full)*100
             return str(int(percent))
         except Exception as e:
             print(e)
             return 'N/A'
+
+    #Gets the current volume of a bottle
+    def getBottleVolume(self, bottleName):
+        vol = int(self.pumpFull[bottleName]['volume'])
+        return vol
+
+    #Gets the initial volume of a bottle
+    def getBottleInitVolume(self, bottleName):
+        vol = int(self.pumpFull[bottleName]['originalVolume'])
+        return vol
 
     def getBottleName(self, bottleNum):
         try:
