@@ -14,5 +14,13 @@
 {"name": "naked and famous",
 "ingredients":["mezcal", "yellow chartreuse", "aperol", "lime juice"],
 "amounts":[1, 1, 1, 1]
-}
+},
+{"name": "gin shot", 
+"ingredients":["gin"],
+"amounts":[1]
+},
+{"name": "tequila shot", 
+    "ingredients":["tequila"],
+    "amounts":[1]
+    }
 ]}

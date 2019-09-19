@@ -10,6 +10,7 @@ class Main():
     def __init__(self):
         self.pumps = [26, 19, 13, 6, 5, 21, 20, 16]
         self.polarityPins = [17, 27] #Pin 17 is #1 and Pin #27 is #2
+        self.pumpTimes = [23, 23, 23, 23.7, 23, 23, 23, 23]
         self.polarityNormal = True
         self.cocktailNames = {}
         self.cocktailIngredients = {}
@@ -21,7 +22,7 @@ class Main():
         self.pumpNumbers = {}
         self.pumpFull = {}
         self.cocktailCount = 0
-        self.pumpTime = 18
+        #self.pumpTime = 23.7 #23.7s is exactly one shot on pump 4
         self.cleanTime = 6
         self.shotVolume = 44 #mL
         self.busy_flag = False
@@ -147,6 +148,7 @@ class Main():
         i = 0
         waitTime = 0
         biggestAmt = 0
+        biggestPumpNum = -1
         for ingredient in self.cocktailIngredients[num]:
             pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient], self.cocktailAmounts[num][i]])
             pumpThread.start()
@@ -157,9 +159,10 @@ class Main():
 
             if(self.cocktailAmounts[num][i] > biggestAmt):
                 biggestAmt = self.cocktailAmounts[num][i]
+                biggestPumpNum = self.pumpMap[ingredient]
             i += 1
         
-        waitTime = biggestAmt*self.pumpTime
+        waitTime = biggestAmt*self.pumpTimes[biggestPumpNum-1] #Must subtract 1 to get right index
         print('Wait Time: ' + str(waitTime))
         time.sleep(waitTime + 2)
         print("Done making cocktail!")
@@ -172,7 +175,7 @@ class Main():
         pumpPinIndex = num - 1
         pumpPin = self.pumps[pumpPinIndex]
         GPIO.output(pumpPin, GPIO.LOW)
-        time.sleep(self.pumpTime*amt)
+        time.sleep(self.pumpTimes[pumpPinIndex]*amt)
         GPIO.output(pumpPin, GPIO.HIGH)
 
     #Turns on a specific pump for indefinite amount of time
@@ -189,6 +192,20 @@ class Main():
         print("Turning off pump: " + str(num))
         GPIO.output(pumpPin, GPIO.HIGH)
 
+    
+    #Calibrates a specific pump by setting it's specific pumping time
+    def calibratePump(self, pumpNum, time):
+        indexNum = pumpNum - 1
+        try:
+            ingredient = self.pumpNumbers[pumpNum]
+            self.pumpTimes[indexNum] = time
+            self.pumpFull[ingredient]['pumpTime'] = time
+            self.writePumpData()
+        except Exception as e:
+            print(e)
+            return 'false'
+
+        return 'true' #Success
     
     #Reverse the polarity of the motors
     def reversePolarity(self):

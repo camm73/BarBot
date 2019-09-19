@@ -9,48 +9,50 @@ import requests
 app = FlaskAPI(__name__)
 main = Main()
 
-@app.route('/<string:name>/', methods=['GET'])
+@app.route('/<string:name>/', strict_slashes=False, methods=['GET'])
 def callMakeCocktail(name):
     res = main.makeCocktail(name)
     if(res == False):
-        return "Issues making cocktail: " + name + "\n"
-    return 'Making cocktail ' + name + '\n'
+        print("Issues making cocktail: " + name + "\n")
+        return 'false'
+    print('Made cocktail ' + name + '\n')
+    return 'true'
 
-@app.route('/clean/', methods=['GET'])
+@app.route('/clean/', strict_slashes=False, methods=['GET'])
 def callCleanPumps():
     main.cleanPumps()
     
     return "Cleaning pumps!"
 
-@app.route('/ingredients/<string:cocktail>/')
+@app.route('/ingredients/<string:cocktail>/', strict_slashes=False, methods=['GET'])
 def getIngredients(cocktail):
     res = main.getIngredients(cocktail)
     print(res)
 
     return res
 
-@app.route('/bottleName/<int:num>/', methods=['GET'])
+@app.route('/bottleName/<int:num>/', strict_slashes=False, methods=['GET'])
 def getBottleName(num):
     #print(main.getBottleName(num))
     return main.getBottleName(num)
 
 
-@app.route('/heartbeat/', methods=['GET'])
+@app.route('/heartbeat/', strict_slashes=False, methods=['GET'])
 def heartbeat():
     return "online"
 
 
-@app.route('/volume/<string:bottleName>/', methods=['GET'])
+@app.route('/volume/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def getBottleVolume(bottleName):
     return str(main.getBottleVolume(bottleName))
 
 
-@app.route('/initVolume/<string:bottleName>/', methods=['GET'])
+@app.route('/initVolume/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def getBottleInitVolume(bottleName):
     return str(main.getBottleInitVolume(bottleName))
 
 
-@app.route('/cocktailList/', methods=['GET'])
+@app.route('/cocktailList/', strict_slashes=False, methods=['GET'])
 def getCocktailList():
     availableCocktails = []
     count = 0
@@ -64,31 +66,37 @@ def getCocktailList():
             print('Cocktail: ' + cocktailName + ' is not available!')
     return availableCocktails
 
-@app.route('/bottleVolumes/', methods=['GET'])
+@app.route('/bottleVolumes/', strict_slashes=False, methods=['GET'])
 def getAllVolumes():
     return main.pumpFull
 
-@app.route('/bottlePercent/<int:num>/', methods=['GET'])
+@app.route('/bottlePercent/<int:num>/', strict_slashes=False, methods=['GET'])
 def getBottlePercent(num):
     return main.getBottlePercentage(num)
 
-@app.route('/pumpOn/<int:num>/', methods=['GET'])
+@app.route('/pumpOn/<int:num>/', strict_slashes=False, methods=['GET'])
 def pumpOn(num):
     main.pumpOn(num)
     return "Pump on!\n"
 
-@app.route('/pumpOff/<int:num>/', methods=['GET'])
+@app.route('/pumpOff/<int:num>/', strict_slashes=False, methods=['GET'])
 def pumpOff(num):
     main.pumpOff(num)
     return "Pump off!\n"
 
-@app.route('/reverse/', methods=['GET'])
+@app.route('/calibrate/<int:num>/time/<float:time>/', strict_slashes=False, methods=['GET'])
+@app.route('/calibrate/<int:num>/time/<int:time>/', strict_slashes=False, methods=['GET'])
+def calibratePump(num, time):
+    res = main.calibratePump(num, time)
+    return res
+
+@app.route('/reverse/', strict_slashes=False, methods=['GET'])
 def reversePolarity():
     polarityNormal = main.reversePolarity()
     print('polarityNormal: ' + str(polarityNormal))
     return str(polarityNormal) + '\n'
 
-@app.route('/volume/<string:ingredient>/', methods=['GET'])
+@app.route('/volume/<string:ingredient>/', strict_slashes=False, methods=['GET'])
 def getIngredientVolume(ingredient):
     vol = {}
     vol['ingredient'] = ingredient
@@ -98,7 +106,7 @@ def getIngredientVolume(ingredient):
     vol['percent'] = round(percent)
     return vol
 
-@app.route('/offline/', methods=['GET'])
+@app.route('/offline/', strict_slashes=False, methods=['GET'])
 def goOffline():
     try:
         res = requests.get('http://barbotdisplay:5000/offline/')
@@ -113,7 +121,7 @@ def goOffline():
         print('Going offline failed')
         exit(1)
 
-@app.route('/online/', methods=['GET'])
+@app.route('/online/', strict_slashes=False, methods=['GET'])
 def goOnline():
     #Call display's goOnline REST endpoint first
     try:
