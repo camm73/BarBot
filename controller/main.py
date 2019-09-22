@@ -338,6 +338,25 @@ class Main():
             print(e)
             return 'N/A'
 
+
+    #Remove bottle from pumpFull and pumpMap.json
+    def removeBottle(self, bottleName):
+        self.pumpFull.pop(bottleName)
+        self.writePumpData()
+        self.loadCocktails()
+        self.loadPumpMap()
+
+    #Adds bottle to pumpFull and pumpMap.json
+    def addBottle(self, bottleName, pumpNum, volume, originalVolume):
+        self.pumpFull[bottleName] = {}
+        self.pumpFull[bottleName]['pump'] = pumpNum
+        self.pumpFull[bottleName]['volume'] = volume
+        self.pumpFull[bottleName]['pumpTime'] = 26
+        self.pumpFull[bottleName]['originalVolume'] = originalVolume
+        self.writePumpData()
+        self.loadPumpMap()
+        self.loadCocktails()
+
     def writePumpData(self):
         with open('pumpMap.json', 'w') as file:
             json.dump(self.pumpFull, file)

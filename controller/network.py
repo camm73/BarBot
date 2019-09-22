@@ -36,6 +36,17 @@ def getBottleName(num):
     #print(main.getBottleName(num))
     return main.getBottleName(num)
 
+@app.route('/removeBottle/<string:bottleName>/', strict_slashes=False, methods=['GET'])
+def removeBottle(bottleName):
+    main.removeBottle(bottleName)
+    return 'true'
+
+@app.route('/addBottle/<string:bottleName>/pump/<int:pumpNum>/volume/<string:volume>/originalVolume/<string:originalVolume>/', strict_slashes=False, methods=['GET'])
+#@app.route('/addBottle/<string:bottleName>?pump=<int:pumpNum>&volume=<int:volume>&originalVolume=<int:originalVolume>/', strict_slashes=False, methods=['GET'])
+def addBottle(bottleName, pumpNum, volume, originalVolume):
+    main.addBottle(bottleName, pumpNum, volume, originalVolume)
+    return 'true'
+
 
 @app.route('/heartbeat/', strict_slashes=False, methods=['GET'])
 def heartbeat():
