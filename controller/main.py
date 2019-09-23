@@ -84,6 +84,7 @@ class Main():
         with open('cocktails.json', 'r') as file:
             data = json.load(file)
 
+        self.cocktailAvailable = {}
         i = 0
         #Loads all cocktail details into separate python objects
         for cocktails in data['cocktails']:
@@ -114,6 +115,7 @@ class Main():
 
         #print('Here is the data: ' + str(data))
         self.pumpFull = data
+        self.pumpNumbers = {}
         
         mapObject = {}
         for item in data:
@@ -343,8 +345,8 @@ class Main():
     def removeBottle(self, bottleName):
         self.pumpFull.pop(bottleName)
         self.writePumpData()
-        self.loadCocktails()
         self.loadPumpMap()
+        self.loadCocktails()
 
     #Adds bottle to pumpFull and pumpMap.json
     def addBottle(self, bottleName, pumpNum, volume, originalVolume):

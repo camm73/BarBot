@@ -44,8 +44,11 @@ def removeBottle(bottleName):
 @app.route('/addBottle/<string:bottleName>/pump/<int:pumpNum>/volume/<string:volume>/originalVolume/<string:originalVolume>/', strict_slashes=False, methods=['GET'])
 #@app.route('/addBottle/<string:bottleName>?pump=<int:pumpNum>&volume=<int:volume>&originalVolume=<int:originalVolume>/', strict_slashes=False, methods=['GET'])
 def addBottle(bottleName, pumpNum, volume, originalVolume):
-    main.addBottle(bottleName, pumpNum, volume, originalVolume)
-    return 'true'
+    try:
+        main.addBottle(bottleName, pumpNum, volume, originalVolume)
+        return 'true'
+    except Exception:
+        return 'false'
 
 
 @app.route('/heartbeat/', strict_slashes=False, methods=['GET'])
