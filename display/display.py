@@ -31,8 +31,8 @@ class Display():
         print('Host address is: ' + self.controllerHost)
         self.cocktailNames = []
         self.getCocktailNames()
-        self.createGUI()
         self.facialRecog = FacialRecognition()
+        self.createGUI()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
