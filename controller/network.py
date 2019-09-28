@@ -50,6 +50,22 @@ def addBottle(bottleName, pumpNum, volume, originalVolume):
     except Exception:
         return 'false'
 
+@app.route('/newBottles/', strict_slashes=False, methods=['GET'])
+def getNewBottles():
+    return main.newBottles
+    '''
+    newList = []
+    count = 0
+    for item in main.newBottles:
+        newList.push({
+            "id": count,
+            "name": item
+        })
+        count += 1
+
+
+    return newList
+    '''
 
 @app.route('/heartbeat/', strict_slashes=False, methods=['GET'])
 def heartbeat():

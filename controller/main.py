@@ -18,6 +18,7 @@ class Main():
         self.cocktailButtons = {}
         self.cocktailNumbers = {}
         self.cocktailAvailable = {}
+        self.newBottles = []
         self.pumpMap = {}
         self.pumpNumbers = {}
         self.pumpFull = {}
@@ -33,6 +34,7 @@ class Main():
 
         self.setupPins()
         self.loadPumpMap()
+        self.loadNewBottles()
         self.loadCocktails()
 
         #Button Mode
@@ -123,6 +125,21 @@ class Main():
             self.pumpNumbers[data[item]["pump"]] = item
         #Store pumpMap data in pumpMap dict
         self.pumpMap = mapObject
+
+    
+    #Load new bottles
+    def loadNewBottles(self):
+        with open('bottles.json', 'r') as file:
+            data = json.load(file)
+
+        self.newBottles = data
+
+        print(self.newBottles)
+
+
+    def writeNewBottles(self):
+        with open('bottles.json', 'w') as file:
+            json.dump(self.newBottles, file)
 
     #Function that crafts the cocktail requested
     def makeCocktail(self, cocktailName):
@@ -344,6 +361,8 @@ class Main():
     #Remove bottle from pumpFull and pumpMap.json
     def removeBottle(self, bottleName):
         self.pumpFull.pop(bottleName)
+        self.newBottles.append(bottleName)
+        self.writeNewBottles()
         self.writePumpData()
         self.loadPumpMap()
         self.loadCocktails()
@@ -355,6 +374,8 @@ class Main():
         self.pumpFull[bottleName]['volume'] = volume
         self.pumpFull[bottleName]['pumpTime'] = 26
         self.pumpFull[bottleName]['originalVolume'] = originalVolume
+        self.newBottles.remove(bottleName)
+        self.writeNewBottles()
         self.writePumpData()
         self.loadPumpMap()
         self.loadCocktails()
