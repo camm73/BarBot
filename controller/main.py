@@ -141,6 +141,12 @@ class Main():
         with open('bottles.json', 'w') as file:
             json.dump(self.newBottles, file)
 
+    
+    #Adds new bottle to the bottle list
+    def addNewBottle(self, bottleName):
+        self.newBottles.append(bottleName.lower())
+        self.writeNewBottles()
+
     #Function that crafts the cocktail requested
     def makeCocktail(self, cocktailName):
         if(self.busy_flag):

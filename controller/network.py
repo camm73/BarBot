@@ -50,7 +50,14 @@ def addBottle(bottleName, pumpNum, volume, originalVolume):
     except Exception:
         return 'false'
 
-@app.route('/newBottles/', strict_slashes=False, methods=['GET'])
+
+@app.route('/newBottle/<string:bottleName>/', strict_slashes=False, methods=['GET'])
+def addNewBottle(bottleName):
+    main.addNewBottle(bottleName)
+
+    return 'true'
+
+@app.route('/getBottles/', strict_slashes=False, methods=['GET'])
 def getNewBottles():
     return main.newBottles
     '''
