@@ -9,7 +9,7 @@ import requests
 app = FlaskAPI(__name__)
 main = Main()
 
-@app.route('/<string:name>/', strict_slashes=False, methods=['GET'])
+@app.route('/cocktail/<string:name>/', strict_slashes=False, methods=['GET'])
 def callMakeCocktail(name):
     res = main.makeCocktail(name)
     if(res == False):
@@ -60,19 +60,15 @@ def addNewBottle(bottleName):
 @app.route('/getBottles/', strict_slashes=False, methods=['GET'])
 def getNewBottles():
     return main.newBottles
-    '''
-    newList = []
-    count = 0
-    for item in main.newBottles:
-        newList.push({
-            "id": count,
-            "name": item
-        })
-        count += 1
 
+@app.route('/getAllBottles/', strict_slashes=False, methods=['GET'])
+def getAllBottles():
+    allBottles = main.newBottles
 
-    return newList
-    '''
+    for bottle in main.pumpMap.keys():
+        allBottles.append(bottle)
+
+    return allBottles
 
 @app.route('/heartbeat/', strict_slashes=False, methods=['GET'])
 def heartbeat():
