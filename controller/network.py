@@ -99,6 +99,11 @@ def getCocktailList():
             print('Cocktail: ' + cocktailName + ' is not available!')
     return availableCocktails
 
+
+@app.route('/addRecipe/', strict_slashes=False, methods=['POST'])
+def addCocktailRecipe():
+    return main.addCocktailRecipe(request.json)
+
 @app.route('/bottleVolumes/', strict_slashes=False, methods=['GET'])
 def getAllVolumes():
     return main.pumpFull

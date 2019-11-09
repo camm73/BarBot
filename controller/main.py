@@ -99,6 +99,33 @@ class Main():
             i = i+1
         self.cocktailCount = i
 
+    
+    #Add cocktail recipe to cocktails.json
+    def addCocktailRecipe(self, recipe):
+        data = {}
+
+        try:
+            #Load existing cocktails object from file
+            with open('cocktails.json', 'r') as file:
+                data = json.load(file)
+            
+            #Append recipe to cocktailList
+            data['cocktails'].append(recipe)
+
+            #Write updated object to file
+            with open('cocktails.json', 'w') as file:
+                json.dump(data, file)
+
+            #Reload cocktail menu
+            self.loadCocktails()
+        except Exception as e:
+            print("Error adding cocktail recipe: " + e)
+            return 'false'
+
+        #Return successful
+        return 'true'
+
+
     #Scans through the ingredients on each pump and the ingredients needed for this cocktail to determine availability
     def isAvailable(self, cocktailName):
         cocktailNumber = self.cocktailNumbers[cocktailName]
