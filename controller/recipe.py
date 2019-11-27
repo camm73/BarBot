@@ -3,12 +3,11 @@ import time
 import json
 import decimal
 
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+table = dynamodb.Table('BarBot-Recipe')
+
 def uploadRecipe(recipe):
     try:
-        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-
-        table = dynamodb.Table('BarBot')
-
         amountItem = getAmounts(recipe)
 
         exampleObject = {
@@ -16,8 +15,6 @@ def uploadRecipe(recipe):
             'ingredients': recipe['ingredients'],
             'amounts': amountItem
         }
-
-        return exampleObject
         
         response = table.put_item(
             Item={
@@ -26,6 +23,10 @@ def uploadRecipe(recipe):
                 'amounts': amountItem
             }
         )
+        
+        print('Successfully uploaded recipe: ' + recipe['name'])
+        return True
+
     except Exception as e:
         print(e)
         return False
@@ -33,6 +34,22 @@ def uploadRecipe(recipe):
 def getAmounts(recipe):
     data = {}
     for i in range(0, len(recipe['ingredients'])):
-        data[recipe['ingredients'][i]] = recipe['amounts'][i]
+        data[recipe['ingredients'][i]] = decimal.Decimal(str(recipe['amounts'][i]))
     
     return data
+
+def getRecipe(recipeName):
+    
+    try:
+        response = table.get_item(
+            Key={
+                'cocktailName': recipeName
+            }
+        )
+    except Exception as e:
+        print(e)
+        return {}
+    else:
+        recipe = response['Item']
+        print('Successfully retrieved recipe from database')
+        return recipe

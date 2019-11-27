@@ -3,6 +3,7 @@ import time
 import tkinter as tk
 import traceback
 import threading
+from recipe import uploadRecipe
 import json
 
 class Main():
@@ -100,30 +101,11 @@ class Main():
         self.cocktailCount = i
 
     
-    #Add cocktail recipe to cocktails.json
+    #Add cocktail recipe to BarBot-Recipes Table in DynamoDB
     def addCocktailRecipe(self, recipe):
-        data = {}
-
-        try:
-            #Load existing cocktails object from file
-            with open('cocktails.json', 'r') as file:
-                data = json.load(file)
-            
-            #Append recipe to cocktailList
-            data['cocktails'].append(recipe)
-
-            #Write updated object to file
-            with open('cocktails.json', 'w') as file:
-                json.dump(data, file)
-
-            #Reload cocktail menu
-            self.loadCocktails()
-        except Exception as e:
-            print("Error adding cocktail recipe: " + e)
-            return 'false'
-
-        #Return successful
-        return 'true'
+        if(uploadRecipe(recipe)):
+            return 'true'
+        return 'false'
 
 
     #Scans through the ingredients on each pump and the ingredients needed for this cocktail to determine availability
