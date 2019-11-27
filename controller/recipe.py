@@ -18,7 +18,7 @@ def uploadRecipe(recipe):
         
         response = table.put_item(
             Item={
-                'cocktailName': recipe['name'],
+                'cocktailName': recipe['name'].lower(), #MUST BE LOWERCASE BECAUSE DYNAMO IS CASE SENSITIVE FOR KEYS
                 'ingredients': recipe['ingredients'],
                 'amounts': amountItem
             }
@@ -39,11 +39,11 @@ def getAmounts(recipe):
     return data
 
 def getRecipe(recipeName):
-    
+
     try:
         response = table.get_item(
             Key={
-                'cocktailName': recipeName
+                'cocktailName': recipeName.lower() #MUST BE LOWERCASE
             }
         )
     except Exception as e:

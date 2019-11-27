@@ -3,7 +3,8 @@ import time
 import tkinter as tk
 import traceback
 import threading
-from recipe import uploadRecipe
+from recipe import uploadRecipe, getRecipe
+from utils import nameToUpper
 import json
 
 class Main():
@@ -332,15 +333,16 @@ class Main():
         return True
 
     
+    #Get the ingredients of a specific cocktail from DynamoDB
     def getIngredients(self, name):
-        cocktailNum = self.cocktailNumbers[name]
-        retIngredients = {}
-        i = 0
-        for ingredient in self.cocktailIngredients[cocktailNum]:
-            retIngredients[ingredient] = self.cocktailAmounts[cocktailNum][i]
-            i += 1
-        
-        return retIngredients
+        response = getRecipe(name)
+        recipe = {}
+
+        #Convert Decimals back to floats
+        for key in response['amounts']:
+            recipe[key] = float(response['amounts'][key])
+
+        return recipe
 
     def getBottlePercentage(self, bottleNum):
         try:
