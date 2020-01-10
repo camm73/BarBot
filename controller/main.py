@@ -3,7 +3,7 @@ import time
 import tkinter as tk
 import traceback
 import threading
-from recipe import uploadRecipe, getRecipe
+from recipe import uploadRecipe, getRecipe, getAllRecipes
 from utils import nameToUpper
 import json
 
@@ -37,7 +37,8 @@ class Main():
         self.setupPins()
         self.loadPumpMap()
         self.loadNewBottles()
-        self.loadCocktails()
+        #self.loadCocktails()  REMOVED TO REPLACE WITH updateLocalRecipes
+        self.updateLocalRecipes()
 
         #Button Mode
         if(self.mode == 1):
@@ -105,8 +106,48 @@ class Main():
     #Add cocktail recipe to BarBot-Recipes Table in DynamoDB
     def addCocktailRecipe(self, recipe):
         if(uploadRecipe(recipe)):
+            #TODO: Need to update the local recipe list json file
+            res = self.updateLocalRecipes()
+            if(res == False):
+                return 'false'
             return 'true'
         return 'false'
+
+    #Updates cocktails.json with data from the Dynamodb table
+    def updateLocalRecipes(self):
+        newRecipeRaw = getAllRecipes()
+
+        if(newRecipeRaw == {}):
+            print('Error getting recipes from DynamoDB')
+            return False
+
+        newCocktailJSON = {'cocktails': []}
+
+        for rec in newRecipeRaw:
+            amountItem = json.loads(newRecipeRaw[rec])['amounts']
+            
+            ingredientArr = []
+            amountsArr = []
+            for ingredient in amountItem:
+                ingredientArr.append(ingredient)
+                amountsArr.append(amountItem[ingredient])
+            
+            newItew = {
+                "name": rec,
+                "ingredients": ingredientArr,
+                "amounts": amountsArr
+            }
+
+            newCocktailJSON['cocktails'].append(newItew)
+
+        with open('cocktails.json', 'w') as file:
+            json.dump(newCocktailJSON, file)
+
+        print('Wrote new cocktails to file')
+
+        self.loadCocktails()
+
+        return True
 
 
     #Scans through the ingredients on each pump and the ingredients needed for this cocktail to determine availability

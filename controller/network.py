@@ -6,6 +6,10 @@ import time
 import subprocess
 import requests
 
+#####TESTING IMPORTS#######
+from recipe import getAllRecipes
+############################
+
 app = FlaskAPI(__name__)
 main = Main()
 

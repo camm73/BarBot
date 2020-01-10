@@ -53,3 +53,41 @@ def getRecipe(recipeName):
         recipe = response['Item']
         print('Successfully retrieved recipe from database')
         return recipe
+
+
+#Perform a table scan to return a list of all of the recipes
+def getAllRecipes():
+    newCocktails = {}
+    try:
+        response = table.scan()
+
+        for i in response['Items']:
+            cocktailData = json.dumps(i, cls=DecimalEncoder)
+            newCocktails[i['cocktailName']] = cocktailData
+
+        while 'LastEvaluatedKey' in response:
+            response = table.scan(
+                ExclusiveStartKey=response['LastEvaluatedKey']
+            )
+
+            for i in response['Items']:
+                cocktailData = json.dumps(i, cls=DecimalEncoder)
+                newCocktails[cocktailData['cocktailName']] = cocktailData
+
+    except Exception as e:
+        print(e)
+        return {}
+
+    return newCocktails
+
+
+# Helper class to convert a DynamoDB item to JSON.
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if o % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
+
