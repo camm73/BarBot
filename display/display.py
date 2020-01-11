@@ -2,6 +2,7 @@ import sys
 import time
 import json
 import tkinter as tk
+from tkinter.font import Font
 import requests
 import urllib.parse
 import subprocess
@@ -69,7 +70,7 @@ class Display():
         i = 0
         buttonCol = 0
         buttonRow = 0
-        cocktailButtonFont = tkFont.Font(family='Helvetica', size=24, weight="normal")
+        cocktailButtonFont = Font(family='Helvetica', size=24, weight="normal")
         for drink in self.cocktailNames:
             if(buttonCol == 3):
                 buttonCol = 0
