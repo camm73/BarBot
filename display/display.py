@@ -24,7 +24,8 @@ class Display():
     def __init__(self):
         self.cocktailButtons = {}
         self.window = None
-        self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
+        #self.controllerHost = 'http://' + self.getIpAddress() + ':5000'
+        self.controllerHost = 'http://barbot.local:5000'
         print('Host address is: ' + self.controllerHost)
         self.cocktailNames = []
         self.getCocktailNames()
