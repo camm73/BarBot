@@ -5,6 +5,7 @@ import threading
 import time
 import subprocess
 import requests
+import traceback
 
 #####TESTING IMPORTS#######
 from recipe import getAllRecipes
@@ -51,7 +52,9 @@ def addBottle(bottleName, pumpNum, volume, originalVolume):
     try:
         main.addBottle(bottleName, pumpNum, volume, originalVolume)
         return 'true'
-    except Exception:
+    except Exception as e:
+        print("Failed adding bottle in app!")
+        traceback.print_exc()
         return 'false'
 
 

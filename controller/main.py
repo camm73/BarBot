@@ -194,9 +194,22 @@ class Main():
 
     
     #Adds new bottle to the bottle list
-    def addNewBottle(self, bottleName):
-        self.newBottles.append(bottleName.lower())
-        self.writeNewBottles()
+    def addNewBottleToList(self, bottleName):
+        if(bottleName.lower() not in self.newBottles):
+            self.newBottles.append(bottleName.lower())
+            self.writeNewBottles()
+        else:
+            print('Bottle: ' + bottleName + "  is already in the list")
+
+
+    #Removes bottle from bottle list
+    def removeBottleFromList(self, bottleName):
+        if(bottleName in self.newBottles):
+            self.newBottles.remove(bottleName)
+            self.writeNewBottles()
+        else:
+            print("Bottle: " + bottleName + "  not in list to begin with!")
+
 
     #Function that crafts the cocktail requested
     def makeCocktail(self, cocktailName):
@@ -374,14 +387,26 @@ class Main():
         return True
 
     
-    #Get the ingredients of a specific cocktail from DynamoDB
-    def getIngredients(self, name):
+    #Get the ingredients of a specific cocktail from DynamoDB (CLOUD ONLY VERSION)
+    def getCloudIngredients(self, name):
         response = getRecipe(name)
         recipe = {}
 
         #Convert Decimals back to floats
         for key in response['amounts']:
             recipe[key] = float(response['amounts'][key])
+
+        return recipe
+
+    def getIngredients(self, name):
+        print("GETTING INGREDIENTS")
+        cocktailNum = self.cocktailNumbers[name]
+        recipe = {}
+
+        i = 0
+        for ingredient in self.cocktailIngredients[cocktailNum]:
+            recipe[ingredient] = float(self.cocktailAmounts[cocktailNum][i])
+            i += 1
 
         return recipe
 
@@ -419,8 +444,7 @@ class Main():
     #Remove bottle from pumpFull and pumpMap.json
     def removeBottle(self, bottleName):
         self.pumpFull.pop(bottleName)
-        self.newBottles.append(bottleName)
-        self.writeNewBottles()
+        self.addNewBottleToList(bottleName)
         self.writePumpData()
         self.loadPumpMap()
         self.loadCocktails()
@@ -432,8 +456,7 @@ class Main():
         self.pumpFull[bottleName]['volume'] = volume
         self.pumpFull[bottleName]['pumpTime'] = 26
         self.pumpFull[bottleName]['originalVolume'] = originalVolume
-        self.newBottles.remove(bottleName)
-        self.writeNewBottles()
+        self.removeBottleFromList(bottleName)
         self.writePumpData()
         self.loadPumpMap()
         self.loadCocktails()
