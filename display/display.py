@@ -85,6 +85,7 @@ class Display():
         buttonRow += 1
         stopButton = tk.Button(self.window, text='STOP', width = 4, height = 2, command=self.window.destroy)
         stopButton.grid(row=buttonRow, column=buttonCol)
+        '''
         buttonRow += 1
         buttonCol -=1
         offlineButton = tk.Button(self.window, text='Go Offline', width = 6, height = 2, command=self.triggerControllerOffline)
@@ -92,6 +93,7 @@ class Display():
         buttonCol += 1
         onlineButton = tk.Button(self.window, text='Go Online', width = 6, height = 2, command=self.triggerControllerOnline)
         onlineButton.grid(row=buttonRow, column=buttonCol)
+        '''
         self.window.mainloop()
 
 
