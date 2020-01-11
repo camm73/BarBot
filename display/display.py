@@ -64,7 +64,7 @@ class Display():
     def createGUI(self):
         self.window = tk.Tk()
         self.window.grid()
-        self.window.geometry('480x320')
+        self.window.geometry('620x440')
         self.window.title('BarBot - Beta Version 1.0')
         i = 0
         buttonCol = 0
