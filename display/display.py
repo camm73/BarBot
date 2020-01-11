@@ -47,7 +47,7 @@ class Display():
 
     def makeCocktail(self, name):
         urlName = urllib.parse.quote(name)
-        res = requests.get(self.controllerHost + '/' + urlName + '/')
+        res = requests.get(self.controllerHost + '/cocktail/' +  urlName + '/')
 
         if(res.status_code != 200):
             print('There was an error!')
