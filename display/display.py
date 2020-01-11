@@ -64,17 +64,18 @@ class Display():
     def createGUI(self):
         self.window = tk.Tk()
         self.window.grid()
-        self.window.geometry('620x440')
+        self.window.geometry('640x440')
         self.window.title('BarBot - Beta Version 1.0')
         i = 0
         buttonCol = 0
         buttonRow = 0
+        cocktailButtonFont = tkFont.Font(family='Helvetica', size=24, weight="normal")
         for drink in self.cocktailNames:
             if(buttonCol == 3):
                 buttonCol = 0
                 buttonRow += 1
             name = self.cocktailNames[i]
-            self.cocktailButtons[i] = tk.Button(self.window, text=name, width = 30, height =20, command= lambda name=name: self.makeCocktail(name))
+            self.cocktailButtons[i] = tk.Button(self.window, text=name, font=cocktailButtonFont, width = 30, height =20, command= lambda name=name: self.makeCocktail(name))
             self.cocktailButtons[i].grid(column=buttonCol, row=buttonRow)
             buttonCol += 1
             i = i+1
@@ -83,7 +84,7 @@ class Display():
         cleanButton = tk.Button(self.window, text='Clean Pumps', width = 8, height = 4, command=self.cleanPumps)
         cleanButton.grid(row=buttonRow, column=buttonCol)
         buttonRow += 1
-        stopButton = tk.Button(self.window, text='STOP', width = 4, height = 2, command=self.window.destroy)
+        stopButton = tk.Button(self.window, text='STOP', width = 10, height = 5, command=self.window.destroy)
         stopButton.grid(row=buttonRow, column=buttonCol)
         '''
         buttonRow += 1
