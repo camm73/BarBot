@@ -76,7 +76,7 @@ class Display():
                 buttonCol = 0
                 buttonRow += 1
             name = self.cocktailNames[i]
-            self.cocktailButtons[i] = tk.Button(self.window, text=name, font=cocktailButtonFont, width = 8, height =4, command= lambda name=name: self.makeCocktail(name))
+            self.cocktailButtons[i] = tk.Button(self.window, text=name, font=cocktailButtonFont, width = 10, height =5, command= lambda name=name: self.makeCocktail(name))
             self.cocktailButtons[i].grid(column=buttonCol, row=buttonRow)
             buttonCol += 1
             i = i+1
