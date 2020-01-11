@@ -3,6 +3,8 @@ import time
 import tkinter as tk
 import traceback
 import threading
+from recipe import uploadRecipe, getRecipe, getAllRecipes
+from utils import nameToUpper
 import json
 
 class Main():
@@ -35,7 +37,8 @@ class Main():
         self.setupPins()
         self.loadPumpMap()
         self.loadNewBottles()
-        self.loadCocktails()
+        #self.loadCocktails()  REMOVED TO REPLACE WITH updateLocalRecipes
+        self.updateLocalRecipes()
 
         #Button Mode
         if(self.mode == 1):
@@ -100,30 +103,51 @@ class Main():
         self.cocktailCount = i
 
     
-    #Add cocktail recipe to cocktails.json
+    #Add cocktail recipe to BarBot-Recipes Table in DynamoDB
     def addCocktailRecipe(self, recipe):
-        data = {}
+        if(uploadRecipe(recipe)):
+            #TODO: Need to update the local recipe list json file
+            res = self.updateLocalRecipes()
+            if(res == False):
+                return 'false'
+            return 'true'
+        return 'false'
 
-        try:
-            #Load existing cocktails object from file
-            with open('cocktails.json', 'r') as file:
-                data = json.load(file)
+    #Updates cocktails.json with data from the Dynamodb table
+    def updateLocalRecipes(self):
+        newRecipeRaw = getAllRecipes()
+
+        if(newRecipeRaw == {}):
+            print('Error getting recipes from DynamoDB')
+            return False
+
+        newCocktailJSON = {'cocktails': []}
+
+        for rec in newRecipeRaw:
+            amountItem = json.loads(newRecipeRaw[rec])['amounts']
             
-            #Append recipe to cocktailList
-            data['cocktails'].append(recipe)
+            ingredientArr = []
+            amountsArr = []
+            for ingredient in amountItem:
+                ingredientArr.append(ingredient)
+                amountsArr.append(amountItem[ingredient])
+            
+            newItew = {
+                "name": rec,
+                "ingredients": ingredientArr,
+                "amounts": amountsArr
+            }
 
-            #Write updated object to file
-            with open('cocktails.json', 'w') as file:
-                json.dump(data, file)
+            newCocktailJSON['cocktails'].append(newItew)
 
-            #Reload cocktail menu
-            self.loadCocktails()
-        except Exception as e:
-            print("Error adding cocktail recipe: " + e)
-            return 'false'
+        with open('cocktails.json', 'w') as file:
+            json.dump(newCocktailJSON, file)
 
-        #Return successful
-        return 'true'
+        print('Wrote new cocktails to file')
+
+        self.loadCocktails()
+
+        return True
 
 
     #Scans through the ingredients on each pump and the ingredients needed for this cocktail to determine availability
@@ -170,9 +194,22 @@ class Main():
 
     
     #Adds new bottle to the bottle list
-    def addNewBottle(self, bottleName):
-        self.newBottles.append(bottleName.lower())
-        self.writeNewBottles()
+    def addNewBottleToList(self, bottleName):
+        if(bottleName.lower() not in self.newBottles):
+            self.newBottles.append(bottleName.lower())
+            self.writeNewBottles()
+        else:
+            print('Bottle: ' + bottleName + "  is already in the list")
+
+
+    #Removes bottle from bottle list
+    def removeBottleFromList(self, bottleName):
+        if(bottleName in self.newBottles):
+            self.newBottles.remove(bottleName)
+            self.writeNewBottles()
+        else:
+            print("Bottle: " + bottleName + "  not in list to begin with!")
+
 
     #Function that crafts the cocktail requested
     def makeCocktail(self, cocktailName):
@@ -350,15 +387,28 @@ class Main():
         return True
 
     
+    #Get the ingredients of a specific cocktail from DynamoDB (CLOUD ONLY VERSION)
+    def getCloudIngredients(self, name):
+        response = getRecipe(name)
+        recipe = {}
+
+        #Convert Decimals back to floats
+        for key in response['amounts']:
+            recipe[key] = float(response['amounts'][key])
+
+        return recipe
+
     def getIngredients(self, name):
+        print("GETTING INGREDIENTS")
         cocktailNum = self.cocktailNumbers[name]
-        retIngredients = {}
+        recipe = {}
+
         i = 0
         for ingredient in self.cocktailIngredients[cocktailNum]:
-            retIngredients[ingredient] = self.cocktailAmounts[cocktailNum][i]
+            recipe[ingredient] = float(self.cocktailAmounts[cocktailNum][i])
             i += 1
-        
-        return retIngredients
+
+        return recipe
 
     def getBottlePercentage(self, bottleNum):
         try:
@@ -394,8 +444,7 @@ class Main():
     #Remove bottle from pumpFull and pumpMap.json
     def removeBottle(self, bottleName):
         self.pumpFull.pop(bottleName)
-        self.newBottles.append(bottleName)
-        self.writeNewBottles()
+        self.addNewBottleToList(bottleName)
         self.writePumpData()
         self.loadPumpMap()
         self.loadCocktails()
@@ -407,8 +456,7 @@ class Main():
         self.pumpFull[bottleName]['volume'] = volume
         self.pumpFull[bottleName]['pumpTime'] = 26
         self.pumpFull[bottleName]['originalVolume'] = originalVolume
-        self.newBottles.remove(bottleName)
-        self.writeNewBottles()
+        self.removeBottleFromList(bottleName)
         self.writePumpData()
         self.loadPumpMap()
         self.loadCocktails()
