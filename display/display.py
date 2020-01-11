@@ -14,6 +14,7 @@ import traceback
 
 app = FlaskAPI(__name__)
 
+#HOSTNAME = barbotdisplay.local
 class Display():
     
     #====================TODO====================#
@@ -110,7 +111,7 @@ class Display():
     def getIpAddress(self):
         try:
             print('Retrieving ip address...')
-            addr = socket.gethostbyname('barbot')
+            addr = socket.gethostbyname('barbot.local')
             print('Controller IP Address: ' + addr)
             return addr
         except socket.gaierror:

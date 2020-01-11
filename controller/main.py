@@ -195,6 +195,7 @@ class Main():
     
     #Adds new bottle to the bottle list
     def addNewBottleToList(self, bottleName):
+        print("ADDING " + bottleName + " TO BOTTLE LIST")
         if(bottleName.lower() not in self.newBottles):
             self.newBottles.append(bottleName.lower())
             self.writeNewBottles()

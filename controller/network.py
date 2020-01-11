@@ -60,7 +60,7 @@ def addBottle(bottleName, pumpNum, volume, originalVolume):
 
 @app.route('/newBottle/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def addNewBottle(bottleName):
-    main.addNewBottle(bottleName)
+    main.addNewBottleToList(bottleName)
 
     return 'true'
 
