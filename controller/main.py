@@ -26,7 +26,7 @@ class Main():
         self.pumpFull = {}
         self.cocktailCount = 0
         #self.pumpTime = 23.7 #23.7s is exactly one shot on pump 4
-        self.cleanTime = 6
+        self.cleanTime = 10
         self.shotVolume = 44 #mL
         self.busy_flag = False
         self.window = None
@@ -370,7 +370,7 @@ class Main():
 
     def adjustVolumeData(self, ingredientName, shotAmount):
         print('Value: ' + self.pumpFull[ingredientName]['volume'])
-        newVal = int(self.pumpFull[ingredientName]['volume']) - (self.shotVolume*shotAmount)
+        newVal = round(float(self.pumpFull[ingredientName]['volume'])) - (self.shotVolume*shotAmount)
         print('New Value: ' + str(newVal))
         self.pumpFull[ingredientName]['volume'] = str(newVal)
         self.writePumpData()
@@ -380,8 +380,8 @@ class Main():
         cocktailNum = self.cocktailNumbers[name]
         i = 0
         for ingredient in self.cocktailIngredients[cocktailNum]:
-            availableAmt = int(self.pumpFull[ingredient]['volume'])
-            needAmt = int(self.cocktailAmounts[cocktailNum][i])*self.shotVolume
+            availableAmt = round(float(self.pumpFull[ingredient]['volume']))
+            needAmt = round(float(self.cocktailAmounts[cocktailNum][i]))*self.shotVolume
             print('Ingredient: ' + name + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
             if((availableAmt - needAmt) < 0):
                 return False
@@ -424,12 +424,12 @@ class Main():
 
     #Gets the current volume of a bottle
     def getBottleVolume(self, bottleName):
-        vol = int(self.pumpFull[bottleName]['volume'])
+        vol = round(float(self.pumpFull[bottleName]['volume']))
         return vol
 
     #Gets the initial volume of a bottle
     def getBottleInitVolume(self, bottleName):
-        vol = int(self.pumpFull[bottleName]['originalVolume'])
+        vol = round(float(self.pumpFull[bottleName]['originalVolume']))
         return vol
 
     def getBottleName(self, bottleNum):
