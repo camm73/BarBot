@@ -26,7 +26,7 @@ class Main():
         self.pumpFull = {}
         self.cocktailCount = 0
         #self.pumpTime = 23.7 #23.7s is exactly one shot on pump 4
-        self.cleanTime = 12
+        self.cleanTime = 12  #Regular Time: 12 seconds
         self.shotVolume = 44 #mL
         self.busy_flag = False
         self.window = None
