@@ -12,6 +12,7 @@ import threading
 from flask import request, url_for
 from flask_api import FlaskAPI, status, exceptions
 import traceback
+import FacialRecognition
 
 app = FlaskAPI(__name__)
 
@@ -31,6 +32,7 @@ class Display():
         self.cocktailNames = []
         self.getCocktailNames()
         self.createGUI()
+        self.facialRecog = FacialRecognition()
     
     #TODO change this to be the static ip address of the pi
     def getCocktailNames(self):
@@ -50,9 +52,10 @@ class Display():
     def makeCocktail(self, name):
         urlName = urllib.parse.quote(name)
         res = requests.get(self.controllerHost + '/cocktail/' +  urlName + '/')
-
         if(res.status_code != 200):
             print('There was an error!')
+            return
+        self.facialRecog.findFace()
 
 
     def cleanPumps(self):
