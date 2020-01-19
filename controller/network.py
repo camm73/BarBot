@@ -25,9 +25,8 @@ def callMakeCocktail(name):
 
 @app.route('/clean/', strict_slashes=False, methods=['GET'])
 def callCleanPumps():
-    main.cleanPumps()
-    
-    return "Cleaning pumps!"
+    res = main.cleanPumps()
+    return res
 
 @app.route('/ingredients/<string:cocktail>/', strict_slashes=False, methods=['GET'])
 def getIngredients(cocktail):
@@ -44,6 +43,13 @@ def getBottleName(num):
 @app.route('/removeBottle/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def removeBottle(bottleName):
     main.removeBottle(bottleName)
+    return 'true'
+
+@app.route('/removeAllBottles/', strict_slashes=False, methods=['GET'])
+def removeAllBottles():
+    res = main.removeAllBottles()
+    if(not res):
+        return 'false'
     return 'true'
 
 @app.route('/addBottle/<string:bottleName>/pump/<int:pumpNum>/volume/<string:volume>/originalVolume/<string:originalVolume>/', strict_slashes=False, methods=['GET'])

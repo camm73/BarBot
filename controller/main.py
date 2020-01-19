@@ -26,7 +26,7 @@ class Main():
         self.pumpFull = {}
         self.cocktailCount = 0
         #self.pumpTime = 23.7 #23.7s is exactly one shot on pump 4
-        self.cleanTime = 10
+        self.cleanTime = 12
         self.shotVolume = 44 #mL
         self.busy_flag = False
         self.window = None
@@ -321,14 +321,6 @@ class Main():
 
     #Cleans Pumps by flushin them for time specified in self.cleanTime
     def cleanPumps(self):
-        '''
-        for pump in self.pumps:
-            GPIO.output(pump, GPIO.LOW)
-            time.sleep(self.cleanTime)
-            GPIO.output(pump, GPIO.HIGH)
-            print('Cleaned Pump ' + str(pump))
-        '''
-
         print('Cleaning pumps!')
         for pump in self.pumps:
             GPIO.output(pump, GPIO.LOW)
@@ -337,6 +329,8 @@ class Main():
 
         for pump in self.pumps:
             GPIO.output(pump, GPIO.HIGH)
+        
+        return 'true'
 
 
     def setupButtons(self):
@@ -441,6 +435,24 @@ class Main():
             print(e)
             return 'N/A'
 
+    
+    #Remove all bottles from pumps
+    def removeAllBottles(self):
+        #First reverse the polarity
+        self.reversePolarity()
+
+        #Make a copy of the bottles
+        totalBottles = list(self.pumpFull.keys())
+
+        #Next remove all bottles
+        for bottleName in totalBottles:
+            self.removeBottle(bottleName)
+        
+        #Run a the clean function to turn on all pumps
+        self.cleanPumps()
+
+        #Finally reverse the polarity again
+        return True
 
     #Remove bottle from pumpFull and pumpMap.json
     def removeBottle(self, bottleName):
