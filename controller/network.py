@@ -91,12 +91,20 @@ def heartbeat():
 
 @app.route('/volume/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def getBottleVolume(bottleName):
-    return str(main.getBottleVolume(bottleName))
+    vol = main.getBottleVolume(bottleName)
+    if(vol == -1.0):
+        return 'N/A'
+    else:
+        return str(vol)
 
 
 @app.route('/initVolume/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def getBottleInitVolume(bottleName):
-    return str(main.getBottleInitVolume(bottleName))
+    vol = main.getBottleInitVolume(bottleName)
+    if(vol == -1.0):
+        return 'N/A'
+    else:
+        return str(vol)
 
 
 @app.route('/cocktailList/', strict_slashes=False, methods=['GET'])

@@ -26,7 +26,7 @@ class Main():
         self.pumpFull = {}
         self.cocktailCount = 0
         #self.pumpTime = 23.7 #23.7s is exactly one shot on pump 4
-        self.cleanTime = 12  #Regular Time: 12 seconds
+        self.cleanTime = 8  #Regular Time: 12 seconds
         self.shotVolume = 44 #mL
         self.busy_flag = False
         self.window = None
@@ -418,8 +418,11 @@ class Main():
 
     #Gets the current volume of a bottle
     def getBottleVolume(self, bottleName):
-        vol = round(float(self.pumpFull[bottleName]['volume']))
-        return vol
+        if(bottleName in self.pumpFull):
+            vol = round(float(self.pumpFull[bottleName]['volume']))
+            return vol
+        else:
+            return -1.0
 
     #Gets the initial volume of a bottle
     def getBottleInitVolume(self, bottleName):
@@ -456,7 +459,11 @@ class Main():
 
     #Remove bottle from pumpFull and pumpMap.json
     def removeBottle(self, bottleName):
-        self.pumpFull.pop(bottleName)
+        try:
+            self.pumpFull.pop(bottleName)
+        except KeyError as e:
+            print(e)
+            return
         self.addNewBottleToList(bottleName)
         self.writePumpData()
         self.loadPumpMap()
