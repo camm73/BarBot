@@ -18,11 +18,11 @@ main = Main()
 @app.route('/cocktail/<string:name>/', strict_slashes=False, methods=['GET'])
 def callMakeCocktail(name):
     res = main.makeCocktail(name)
-    if(res == False):
-        print("Issues making cocktail: " + name + "\n")
-        return 'false'
-    print('Made cocktail ' + name + '\n')
-    return 'true'
+    if(res != 'true'):
+        print("Issues making cocktail: " + name + "\n" + "Response: " + str(res))
+    else:
+        print('Made cocktail ' + name + '\n')
+    return res
 
 @app.route('/clean/', strict_slashes=False, methods=['GET'])
 def callCleanPumps():
@@ -43,15 +43,13 @@ def getBottleName(num):
 
 @app.route('/removeBottle/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def removeBottle(bottleName):
-    main.removeBottle(bottleName)
-    return 'true'
+    res = main.removeBottle(bottleName)
+    return res
 
 @app.route('/removeAllBottles/', strict_slashes=False, methods=['GET'])
 def removeAllBottles():
     res = main.removeAllBottles()
-    if(not res):
-        return 'false'
-    return 'true'
+    return res
 
 @app.route('/addBottle/<string:bottleName>/pump/<int:pumpNum>/volume/<string:volume>/originalVolume/<string:originalVolume>/', strict_slashes=False, methods=['GET'])
 #@app.route('/addBottle/<string:bottleName>?pump=<int:pumpNum>&volume=<int:volume>&originalVolume=<int:originalVolume>/', strict_slashes=False, methods=['GET'])
@@ -125,6 +123,11 @@ def getCocktailList():
 @app.route('/addRecipe/', strict_slashes=False, methods=['POST'])
 def addCocktailRecipe():
     return main.addCocktailRecipe(request.json)
+
+@app.route('/alcoholMode/', strict_slashes=False, methods=['POST'])
+def setAlcoholMode():
+    main.setAlcoholMode(request.json['enable'])
+    return 'true'
 
 @app.route('/bottleVolumes/', strict_slashes=False, methods=['GET'])
 def getAllVolumes():

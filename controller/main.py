@@ -5,6 +5,7 @@ import traceback
 import threading
 from recipe import uploadRecipe, getRecipe, getAllRecipes
 from utils import nameToUpper
+from cocktailStats import incrementCocktail
 import json
 
 class Main():
@@ -20,6 +21,8 @@ class Main():
         self.cocktailButtons = {}
         self.cocktailNumbers = {}
         self.cocktailAvailable = {}
+        self.alcoholList = []
+        self.alcoholMode = False
         self.newBottles = []
         self.pumpMap = {}
         self.pumpNumbers = {}
@@ -39,6 +42,8 @@ class Main():
         self.loadNewBottles()
         #self.loadCocktails()  REMOVED TO REPLACE WITH updateLocalRecipes
         self.updateLocalRecipes()
+        self.loadAlcoholList()
+
 
         #Button Mode
         if(self.mode == 1):
@@ -98,9 +103,21 @@ class Main():
             self.cocktailAmounts[i] = data['cocktails'][i]['amounts']
             self.cocktailNumbers[str(data['cocktails'][i]['name'])] = i
             self.cocktailAvailable[str(data['cocktails'][i]['name'])] = self.isAvailable(str(data['cocktails'][i]['name']))
-            print(self.cocktailAvailable[str(data['cocktails'][i]['name'])])
+            print(self.cocktailNames[i] + " available: " + str(self.cocktailAvailable[str(data['cocktails'][i]['name'])]))
             i = i+1
         self.cocktailCount = i
+
+
+    #Loads the list of ingredients that are alcohol
+    def loadAlcoholList(self):
+        data = {}
+
+        with open('alcohol.json', 'r') as file:
+            data = json.load(file)
+        
+        for key in data:
+            if(data[key] == True):
+                self.alcoholList.append(key)
 
     
     #Add cocktail recipe to BarBot-Recipes Table in DynamoDB
@@ -154,11 +171,19 @@ class Main():
     def isAvailable(self, cocktailName):
         cocktailNumber = self.cocktailNumbers[cocktailName]
         
-        for ingredient in self.cocktailIngredients[cocktailNumber]:
-            if(ingredient not in self.pumpMap.keys()):
-                print(ingredient + " not available!")
-                return False
-        return True
+        if(not self.alcoholMode):
+            for ingredient in self.cocktailIngredients[cocktailNumber]:
+                if(ingredient not in self.pumpMap.keys()):
+                    print(ingredient + " not available!")
+                    return False
+            return True
+        else:
+            for ingredient in self.cocktailIngredients[cocktailNumber]:
+                if(ingredient in self.alcoholList):
+                    if(ingredient not in self.pumpMap.keys()):
+                        print(ingredient + " not available!")
+                        return False
+            return True
     
     #Loads pump/ingredient map from json file (ALSO SET PUMP NUMBERS)
     def loadPumpMap(self):
@@ -184,10 +209,10 @@ class Main():
             data = json.load(file)
 
         self.newBottles = data
-
         print(self.newBottles)
 
 
+    #Write bottles list to the bottles.json file
     def writeNewBottles(self):
         with open('bottles.json', 'w') as file:
             json.dump(self.newBottles, file)
@@ -217,18 +242,18 @@ class Main():
         if(self.busy_flag):
             #TODO add some feedback message
             print('Busy making cocktail!')
-            return False
+            return 'busy'
         num = self.cocktailNumbers[cocktailName]
         
         #Check whether the cocktail is available or not
         if(not self.cocktailAvailable[cocktailName]):
             print('This cocktail is not avialable!')
-            return False
+            return 'available'
         
         #Check whether there are enough ingredients
         if(not self.canMakeCocktail(cocktailName)):
             print('Not enough ingredients to make this cocktail.')
-            return False
+            return 'ingredients'
         
         print('Making cocktail ' + str(self.cocktailNames[num]))
         self.busy_flag = True
@@ -240,6 +265,12 @@ class Main():
         biggestAmt = 0
         biggestPumpNum = -1
         for ingredient in self.cocktailIngredients[num]:
+            #Skip pumping non-alcohol ingredients
+            if(self.alcoholMode and ingredient not in self.alcoholList):
+                print(ingredient + ' is not alcohol. Skipping to next ingredient...')
+                continue
+
+            #Create threads to handle running the pumps
             pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient], self.cocktailAmounts[num][i]])
             pumpThread.start()
 
@@ -257,8 +288,11 @@ class Main():
         time.sleep(waitTime + 2)
         print("Done making cocktail!")
 
+        #Update Stat tracking in the cloud
+        incrementCocktail(cocktailName)
+
         self.busy_flag = False
-        return True
+        return 'true'
 
     #Toggles specific pumps for specific amount of time
     def pumpToggle(self, num, amt):
@@ -321,7 +355,12 @@ class Main():
 
     #Cleans Pumps by flushin them for time specified in self.cleanTime
     def cleanPumps(self):
+        if(self.busy_flag):
+            return 'busy'
+
         print('Cleaning pumps!')
+
+        self.busy_flag = True
         for pump in self.pumps:
             GPIO.output(pump, GPIO.LOW)
 
@@ -329,6 +368,7 @@ class Main():
 
         for pump in self.pumps:
             GPIO.output(pump, GPIO.HIGH)
+        self.busy_flag = False
         
         return 'true'
 
@@ -374,6 +414,9 @@ class Main():
         cocktailNum = self.cocktailNumbers[name]
         i = 0
         for ingredient in self.cocktailIngredients[cocktailNum]:
+            #Check for alcohol mode
+            if(self.alcoholMode and ingredient not in self.alcoholList):
+                continue
             availableAmt = round(float(self.pumpFull[ingredient]['volume']))
             needAmt = round(float(self.cocktailAmounts[cocktailNum][i]))*self.shotVolume
             print('Ingredient: ' + name + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
@@ -432,15 +475,27 @@ class Main():
     def getBottleName(self, bottleNum):
         try:
             bottleName = self.pumpNumbers[bottleNum]
-            print(bottleName)
+            print('Bottle Name: ' + bottleName)
             return bottleName
         except Exception as e:
             print(e)
             return 'N/A'
 
+
+    #Enables Barbot's "alcohol mode" (only outputting ingredients that alcohol)
+    def setAlcoholMode(self, modeSetting):
+        self.alcoholMode = modeSetting
+        self.refreshCocktailFiles()
+        print("Alcohol mode: " + str(modeSetting))
+
     
     #Remove all bottles from pumps
     def removeAllBottles(self):
+
+        if(self.busy_flag):
+            return 'busy'
+
+        self.busy_flag = True
         #First reverse the polarity
         self.reversePolarity()
 
@@ -449,25 +504,45 @@ class Main():
 
         #Next remove all bottles
         for bottleName in totalBottles:
-            self.removeBottle(bottleName)
+            self.removeBottle(bottleName, skipPumps=True)
         
         #Run a the clean function to turn on all pumps
         self.cleanPumps()
-
+        self.busy_flag = False
         #Finally reverse the polarity again
-        return True
+        return 'true'
 
     #Remove bottle from pumpFull and pumpMap.json
-    def removeBottle(self, bottleName):
+    def removeBottle(self, bottleName, skipPumps=False):
+        if(bottleName in self.pumpFull and not self.busy_flag and not skipPumps):
+            self.busy_flag = True
+            
+            #Reverse pump polarity
+            self.reversePolarity()
+            
+            #Turn on the designated pump
+            pumpNum = self.pumpMap[bottleName]
+            self.pumpOn(pumpNum)
+
+            #Pause for a few seconds
+            time.sleep(self.cleanTime)
+
+            self.pumpOff(pumpNum)
+            self.busy_flag = False
+        elif(self.busy_flag):
+            return 'busy'
+        
+        #Try to remove bottleName from pumpFull array
         try:
             self.pumpFull.pop(bottleName)
         except KeyError as e:
             print(e)
-            return
+            return 'false'
+
         self.addNewBottleToList(bottleName)
-        self.writePumpData()
-        self.loadPumpMap()
-        self.loadCocktails()
+        self.refreshCocktailFiles()
+
+        return 'true'
 
     #Adds bottle to pumpFull and pumpMap.json
     def addBottle(self, bottleName, pumpNum, volume, originalVolume):
@@ -477,13 +552,18 @@ class Main():
         self.pumpFull[bottleName]['pumpTime'] = 26
         self.pumpFull[bottleName]['originalVolume'] = originalVolume
         self.removeBottleFromList(bottleName)
-        self.writePumpData()
-        self.loadPumpMap()
-        self.loadCocktails()
+        self.refreshCocktailFiles()
 
     def writePumpData(self):
         with open('pumpMap.json', 'w') as file:
             json.dump(self.pumpFull, file)
+
+
+    def refreshCocktailFiles(self):
+        self.writePumpData()
+        self.loadPumpMap()
+        self.loadCocktails()
+        self.loadAlcoholList()
         
 
 '''
