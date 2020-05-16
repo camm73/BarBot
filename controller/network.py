@@ -1,6 +1,7 @@
 from flask import request, url_for
 from flask_api import FlaskAPI, status, exceptions
 from main import Main
+from iotBridge import IoTManager
 import threading
 import time
 import json
@@ -14,6 +15,7 @@ from recipe import getAllRecipes
 
 app = FlaskAPI(__name__)
 main = Main()
+iotManager = IoTManager(main)
 
 @app.route('/cocktail/<string:name>/', strict_slashes=False, methods=['GET'])
 def callMakeCocktail(name):
