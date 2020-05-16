@@ -354,8 +354,8 @@ class Main():
 
 
     #Cleans Pumps by flushin them for time specified in self.cleanTime
-    def cleanPumps(self):
-        if(self.busy_flag):
+    def cleanPumps(self, removeIgnore=False):
+        if(self.busy_flag and not removeIgnore):
             return 'busy'
 
         print('Cleaning pumps!')
@@ -368,7 +368,9 @@ class Main():
 
         for pump in self.pumps:
             GPIO.output(pump, GPIO.HIGH)
-        self.busy_flag = False
+        
+        if(not removeIgnore):
+            self.busy_flag = False
         
         return 'true'
 
@@ -507,7 +509,8 @@ class Main():
             self.removeBottle(bottleName, skipPumps=True)
         
         #Run a the clean function to turn on all pumps
-        self.cleanPumps()
+        self.cleanPumps(removeIgnore=True)
+        self.reversePolarity()
         self.busy_flag = False
         #Finally reverse the polarity again
         return 'true'
@@ -529,7 +532,7 @@ class Main():
 
             self.pumpOff(pumpNum)
             self.busy_flag = False
-        elif(self.busy_flag):
+        elif(self.busy_flag and not skipPumps):
             return 'busy'
         
         #Try to remove bottleName from pumpFull array

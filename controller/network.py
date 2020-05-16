@@ -71,6 +71,7 @@ def addNewBottle(bottleName):
 
 @app.route('/getBottles/', strict_slashes=False, methods=['GET'])
 def getNewBottles():
+    print(main.newBottles)
     return main.newBottles
 
 @app.route('/getAllBottles/', strict_slashes=False, methods=['GET'])
@@ -136,6 +137,10 @@ def getAllVolumes():
 @app.route('/bottlePercent/<int:num>/', strict_slashes=False, methods=['GET'])
 def getBottlePercent(num):
     return main.getBottlePercentage(num)
+
+@app.route('/getAlcoholMode/', strict_slashes=False, methods=['GET'])
+def getAlcoholMode():
+    return json.dumps(main.alcoholMode)
 
 @app.route('/pumpOn/<int:num>/', strict_slashes=False, methods=['GET'])
 def pumpOn(num):
