@@ -21,7 +21,7 @@ class Main():
         self.cocktailButtons = {}
         self.cocktailNumbers = {}
         self.cocktailAvailable = {}
-        self.alcoholList = []
+        self.alcoholList = set()
         self.alcoholMode = False
         self.newBottles = set()
         self.pumpMap = {}
@@ -117,7 +117,38 @@ class Main():
         
         for key in data:
             if(data[key] == True):
-                self.alcoholList.append(key)
+                self.alcoholList.add(key)
+
+    
+    #Writes alcohol list to file
+    def writeAlcoholList(self):
+
+        data = {}
+
+        allBottles = self.newBottles
+
+        #Add bottles that are currently on pumps
+        for bottle in self.pumpMap.keys():
+            allBottles.add(bottle)
+
+        #Go through all ingredients and construct object
+        for ingredient in allBottles:
+            #print(ingredient + ": " + str(ingredient in self.alcoholList))
+            if(ingredient in self.alcoholList):
+                data[ingredient] = True
+            else:
+                data[ingredient] = False
+
+        with open('alcohol.json', 'w') as file:
+            json.dump(data, file)
+
+        print('Updated alcohol list file')
+
+    
+    #Add a bottle to alcohol list
+    def addToAlcoholList(self, bottleName):
+        self.alcoholList.add(bottleName)
+        self.writeAlcoholList()
 
     
     #Add cocktail recipe to BarBot-Recipes Table in DynamoDB

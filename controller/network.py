@@ -65,9 +65,13 @@ def addBottle(bottleName, pumpNum, volume, originalVolume):
         return 'false'
 
 
-@app.route('/newBottle/<string:bottleName>/', strict_slashes=False, methods=['GET'])
-def addNewBottle(bottleName):
-    main.addNewBottleToList(bottleName)
+@app.route('/newBottle/<string:bottleName>/alcohol=<string:isAlcohol>', strict_slashes=False, methods=['GET'])
+def addNewBottle(bottleName, isAlcohol):
+    main.addNewBottleToList(bottleName.lower())
+
+    #Add to alcohol list if it is alcohol
+    if(isAlcohol == 'true'):
+        main.addToAlcoholList(bottleName.lower())
 
     return 'true'
 
