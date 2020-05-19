@@ -23,7 +23,7 @@ class Main():
         self.cocktailAvailable = {}
         self.alcoholList = []
         self.alcoholMode = False
-        self.newBottles = []
+        self.newBottles = set()
         self.pumpMap = {}
         self.pumpNumbers = {}
         self.pumpFull = {}
@@ -169,6 +169,8 @@ class Main():
 
     #Scans through the ingredients on each pump and the ingredients needed for this cocktail to determine availability
     def isAvailable(self, cocktailName):
+        if(cocktailName not in self.cocktailNumbers):
+            return False
         cocktailNumber = self.cocktailNumbers[cocktailName]
         
         if(not self.alcoholMode):
@@ -208,21 +210,21 @@ class Main():
         with open('bottles.json', 'r') as file:
             data = json.load(file)
 
-        self.newBottles = data
+        self.newBottles = set(data)
         print(self.newBottles)
 
 
     #Write bottles list to the bottles.json file
     def writeNewBottles(self):
         with open('bottles.json', 'w') as file:
-            json.dump(self.newBottles, file)
+            json.dump(list(self.newBottles), file)
 
     
     #Adds new bottle to the bottle list
     def addNewBottleToList(self, bottleName):
         print("ADDING " + bottleName + " TO BOTTLE LIST")
         if(bottleName.lower() not in self.newBottles):
-            self.newBottles.append(bottleName.lower())
+            self.newBottles.add(bottleName.lower())
             self.writeNewBottles()
         else:
             print('Bottle: ' + bottleName + "  is already in the list")
@@ -243,6 +245,8 @@ class Main():
             #TODO add some feedback message
             print('Busy making cocktail!')
             return 'busy'
+        if(cocktailName not in self.cocktailNumbers):
+            return 'available'
         num = self.cocktailNumbers[cocktailName]
         
         #Check whether the cocktail is available or not
@@ -531,6 +535,8 @@ class Main():
             time.sleep(self.cleanTime)
 
             self.pumpOff(pumpNum)
+
+            self.reversePolarity()
             self.busy_flag = False
         elif(self.busy_flag and not skipPumps):
             return 'busy'

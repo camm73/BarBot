@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+barbotLog.txt
+startController.sh
+barbot.service
+

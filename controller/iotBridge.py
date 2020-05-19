@@ -10,7 +10,7 @@ class IoTManager():
         
         #Load AWS IoT Core details from json file
         with open('./certs/iotDetails.json', 'r') as file:
-            self.iotDetails = json.loads(file)
+            self.iotDetails = json.load(file)
 
         mqttClient = AWSIoTMQTTClient('barbot')
         mqttClient.configureEndpoint(self.iotDetails['endpoint'], 8883)

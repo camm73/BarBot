@@ -73,12 +73,11 @@ def addNewBottle(bottleName):
 
 @app.route('/getBottles/', strict_slashes=False, methods=['GET'])
 def getNewBottles():
-    print(main.newBottles)
-    return main.newBottles
+    return list(main.newBottles)
 
 @app.route('/getAllBottles/', strict_slashes=False, methods=['GET'])
 def getAllBottles():
-    allBottles = main.newBottles
+    allBottles = list(main.newBottles)
 
     for bottle in main.pumpMap.keys():
         allBottles.append(bottle)
