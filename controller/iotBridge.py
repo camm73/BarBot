@@ -65,7 +65,6 @@ class IoTManager():
 
     #Updates BarBot's IoT shadow    
     def update_shadow(self, jsonData):
-        print(jsonData)
         self.shadow_handler.shadowUpdate(json.dumps(jsonData), self.update_callback, 5)
 
     #Callback function for BarBot's IoT
