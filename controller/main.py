@@ -461,6 +461,22 @@ class Main():
                 return False
         return True
 
+
+    #Get the cocktail list from available ingredients
+    def getCocktailList(self):
+        availableCocktails = []
+        count = 0
+        for i in self.cocktailNames:
+            cocktailName = self.cocktailNames[i]
+
+            if(self.cocktailAvailable[cocktailName]):
+                availableCocktails.append(cocktailName)
+                count += 1
+            else:
+                print('Cocktail: ' + cocktailName + ' is not available!')
+
+        return availableCocktails
+
     
     #Get the ingredients of a specific cocktail from DynamoDB (CLOUD ONLY VERSION)
     def getCloudIngredients(self, name):

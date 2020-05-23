@@ -113,16 +113,23 @@ def getBottleInitVolume(bottleName):
 
 @app.route('/cocktailList/', strict_slashes=False, methods=['GET'])
 def getCocktailList():
-    availableCocktails = []
-    count = 0
-    for i in main.cocktailNames:
-        cocktailName = main.cocktailNames[i]
+    availableCocktails = main.getCocktailList()
+    print("GETTING COCKTAIL LIST")
 
-        if(main.cocktailAvailable[cocktailName]):
-            availableCocktails.append(cocktailName)
-            count += 1
-        else:
-            print('Cocktail: ' + cocktailName + ' is not available!')
+    iotObj = {
+        'state': {
+            'desired': {
+                'menu': availableCocktails
+            }
+        }
+    }
+
+    #Update menu in device shadow
+    shadow_thread = threading.Thread(target=iotManager.update_shadow, args=[iotObj])
+    shadow_thread.daemon = True
+    shadow_thread.start()
+    #iotManager.update_shadow(iotObj)
+
     return availableCocktails
 
 
