@@ -49,7 +49,7 @@ class IoTManager():
             self.main.makeCocktail(data.lower())
         elif(action == 'alcoholMode'):
             if(data == True or data == False):
-                main.alcoholMode = data
+                self.main.setAlcoholMode(data)
             else:
                 print('Not a valid alcoholMode setting!')
         elif(action == 'getMenu'):
