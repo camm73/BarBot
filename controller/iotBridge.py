@@ -42,7 +42,8 @@ class IoTManager():
     def parse_message(self, client, userdata, message):
         real_message = json.loads(message.payload)
         action = real_message['action']
-        data = real_message['data']
+        if('data' in real_message):
+            data = real_message['data']
 
         if(action == 'makeCocktail'):
             self.main.makeCocktail(data.lower())
