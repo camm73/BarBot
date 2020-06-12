@@ -11,9 +11,8 @@ import json
 class Main():
 
     def __init__(self):
-        self.pumps = [26, 19, 13, 6, 5, 21, 20, 16]
+        #[26, 19, 13, 6, 5, 21, 20, 16] GPIOS FOR PUMPS
         self.polarityPins = [17, 27] #Pin 17 is #1 and Pin #27 is #2
-        self.pumpTimes = [23, 23, 23, 23.7, 23, 23, 23, 23]
         self.polarityNormal = True
         self.cocktailNames = {}
         self.cocktailIngredients = {}
@@ -25,42 +24,30 @@ class Main():
         self.alcoholMode = False
         self.newBottles = set()
         self.pumpMap = {}
+        self.pumpData = {}
         self.pumpNumbers = {}
-        self.pumpFull = {}
         self.cocktailCount = 0
-        #self.pumpTime = 23.7 #23.7s is exactly one shot on pump 4
         self.cleanTime = 8  #Regular Time: 12 seconds
         self.shotVolume = 44 #mL
         self.busy_flag = False
         self.window = None
 
-        #Mode 0 is GUI, Mode 1 is Buttons
-        self.setMode()
-
+        self.loadPumpConfig() #Load configuration of pumpMap and pumpData
         self.setupPins()
-        self.loadPumpMap()
         self.loadNewBottles()
-        #self.loadCocktails()  REMOVED TO REPLACE WITH updateLocalRecipes
         self.updateLocalRecipes()
         self.loadAlcoholList()
 
-
-        #Button Mode
-        if(self.mode == 1):
-            self.buttonThread = threading.Thread(target=self.setupButtons)
-            self.buttonThread.daemon = True
-            self.buttonThread.start()
-        elif(self.mode == 0):
-            print("GUI MODE!")
 
     #Sets up pins by setting gpio mode and setting initial output
     def setupPins(self):
         try:
             print("Setting up pump pins...")
             GPIO.setmode(GPIO.BCM)
-            for pin in self.pumps:
-                GPIO.setup(pin, GPIO.OUT)
-                GPIO.output(pin, GPIO.HIGH)
+            for pump in self.pumpData:
+
+                GPIO.setup(self.pumpData[pump]['gpio'], GPIO.OUT)
+                GPIO.output(self.pumpData[pump]['gpio'], GPIO.HIGH)
 
             #Turn on signal for #1 relay
             GPIO.setup(self.polarityPins[0], GPIO.OUT)
@@ -74,19 +61,45 @@ class Main():
             print("Error setting up pump pins: " + str(e))
             exit(1)
 
+
+    #Load pump configuration
+    def loadPumpConfig(self):
+        data = []
+        with open('pumpConfig.json', 'r') as file:
+            data = json.load(file)
+
+        for pump in data:
+            self.pumpData[pump['pumpNum']] = {
+                "pumpNum": pump['pumpNum'],
+                "gpio": pump['gpio'],
+                "type": pump['type'],
+                "pumpTime": pump['pumpTime']
+            }
+
+            #Make sure there is a bottle on the pump
+            if(pump['currentBottle'] != {}):
+                self.pumpMap[pump['currentBottle']['name']] = {
+                    "name": pump['currentBottle']['name'],
+                    "volume": pump['currentBottle']['volume'],
+                    "originalVolume": pump['currentBottle']['originalVolume'],
+                    "pumpNum": pump['pumpNum'] #Should be removed before writing back to file
+                }
+
+
     #Test function that runs all of the pumps for 3 seconds each
     def testPumps(self):
         try:
-            for pin in self.pumps:
-                GPIO.output(pin, GPIO.LOW)
-                print("Turning on pin " + str(pin))
+            for pump in self.pumpData:
+                GPIO.output(self.pumpData[pump]['gpio'], GPIO.LOW)
+                print("Turning on pin " + str(pump['gpio']))
                 time.sleep(3)
-                GPIO.output(pin, GPIO.HIGH)
+                GPIO.output(self.pumpData[pump]['gpio'], GPIO.HIGH)
                 time.sleep(1)
         except KeyboardInterrupt:
             print('Exitting early')
             GPIO.cleanup()
             exit()
+
 
     def loadCocktails(self):
         #Load cocktails from json file
@@ -192,7 +205,6 @@ class Main():
             json.dump(newCocktailJSON, file)
 
         print('Wrote new cocktails to file')
-
         self.loadCocktails()
 
         return True
@@ -217,23 +229,6 @@ class Main():
                         print(ingredient + " not available!")
                         return False
             return True
-    
-    #Loads pump/ingredient map from json file (ALSO SET PUMP NUMBERS)
-    def loadPumpMap(self):
-        data = {}
-        with open('pumpMap.json', 'r') as file:
-            data = json.load(file)
-
-        #print('Here is the data: ' + str(data))
-        self.pumpFull = data
-        self.pumpNumbers = {}
-        
-        mapObject = {}
-        for item in data:
-            mapObject[item] = data[item]["pump"]
-            self.pumpNumbers[data[item]["pump"]] = item
-        #Store pumpMap data in pumpMap dict
-        self.pumpMap = mapObject
 
     
     #Load new bottles
@@ -306,7 +301,7 @@ class Main():
                 continue
 
             #Create threads to handle running the pumps
-            pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient], self.cocktailAmounts[num][i]])
+            pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient]['pumpNum'], self.cocktailAmounts[num][i]])
             pumpThread.start()
 
             #Adjust volume tracking for each of the pumps
@@ -315,10 +310,10 @@ class Main():
 
             if(self.cocktailAmounts[num][i] > biggestAmt):
                 biggestAmt = self.cocktailAmounts[num][i]
-                biggestPumpNum = self.pumpMap[ingredient]
+                biggestPumpNum = self.pumpMap[ingredient]['pumpNum']
             i += 1
         
-        waitTime = biggestAmt*self.pumpTimes[biggestPumpNum-1] #Must subtract 1 to get right index
+        waitTime = biggestAmt*self.pumpData[biggestPumpNum]['pumpTime']
         print('Wait Time: ' + str(waitTime))
         time.sleep(waitTime + 2)
         print("Done making cocktail!")
@@ -331,34 +326,28 @@ class Main():
 
     #Toggles specific pumps for specific amount of time
     def pumpToggle(self, num, amt):
-        pumpPinIndex = num - 1
-        pumpPin = self.pumps[pumpPinIndex]
+        pumpPin = self.pumpData[num]['gpio']
         GPIO.output(pumpPin, GPIO.LOW)
-        time.sleep(self.pumpTimes[pumpPinIndex]*amt)
+        time.sleep(self.pumpData[num]['pumpTime']*amt)
         GPIO.output(pumpPin, GPIO.HIGH)
 
     #Turns on a specific pump for indefinite amount of time
     def pumpOn(self, num):
-        pumpPinIndex = num - 1
-        pumpPin = self.pumps[pumpPinIndex]
+        pumpPin = self.pumpData[num]['gpio']
         print('Turning on pump: ' + str(num))
         GPIO.output(pumpPin, GPIO.LOW)
 
     #Turns off a specific pump for indefinite amount of time
     def pumpOff(self, num):
-        pumpPinIndex = num - 1
-        pumpPin = self.pumps[pumpPinIndex]
+        pumpPin = self.pumpData[num]['gpio']
         print("Turning off pump: " + str(num))
         GPIO.output(pumpPin, GPIO.HIGH)
 
     
     #Calibrates a specific pump by setting it's specific pumping time
     def calibratePump(self, pumpNum, time):
-        indexNum = pumpNum - 1
         try:
-            ingredient = self.pumpNumbers[pumpNum]
-            self.pumpTimes[indexNum] = time
-            self.pumpFull[ingredient]['pumpTime'] = time
+            self.pumpData[pumpNum]['pumpTime'] = time
             self.writePumpData()
         except Exception as e:
             print(e)
@@ -396,13 +385,13 @@ class Main():
         print('Cleaning pumps!')
 
         self.busy_flag = True
-        for pump in self.pumps:
-            GPIO.output(pump, GPIO.LOW)
+        for pump in self.pumpData:
+            GPIO.output(self.pumpData[pump]['gpio'], GPIO.LOW)
 
         time.sleep(self.cleanTime)
 
-        for pump in self.pumps:
-            GPIO.output(pump, GPIO.HIGH)
+        for pump in self.pumpData:
+            GPIO.output(self.pumpData[pump]['gpio'], GPIO.HIGH)
         
         if(not removeIgnore):
             self.busy_flag = False
@@ -410,41 +399,24 @@ class Main():
         return 'true'
 
 
-    def setupButtons(self):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(23, GPIO.OUT)
-        GPIO.output(23, GPIO.HIGH)
-
-        GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-
-        while True:
-            try:
-                '''
-                if (GPIO.input(24) == GPIO.HIGH):
-                    print('This GPIO was triggered')
-                    self.makeCocktail('vodka shot')
-                '''
-            except KeyboardInterrupt:
-                break
-
-    
-    def setMode(self):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        time.sleep(0.25)
-        pinInput = GPIO.input(12)
-        print('Mode Input: ' + str(pinInput))
-        if(pinInput != 0):
-            self.mode = 0
-        else:
-            self.mode = 1
-
     def adjustVolumeData(self, ingredientName, shotAmount):
-        print('Value: ' + self.pumpFull[ingredientName]['volume'])
-        newVal = round(float(self.pumpFull[ingredientName]['volume'])) - (self.shotVolume*shotAmount)
+        print('Value: ' + self.pumpMap[ingredientName]['volume'])
+        newVal = round(float(self.pumpMap[ingredientName]['volume'])) - (self.shotVolume*shotAmount)
         print('New Value: ' + str(newVal))
-        self.pumpFull[ingredientName]['volume'] = str(newVal)
+        self.pumpMap[ingredientName]['volume'] = str(newVal)
         self.writePumpData()
+
+
+    #Assemble ingredient info packet for mobile app
+    def getIngredientVolume(self, ingredient):
+        volObj = {}
+        volObj['ingredient'] = ingredient
+        volObj['volume'] = self.pumpMap[ingredient]['volume']
+        volObj['originalVolume'] = self.pumpMap[ingredient]['originalVolume']
+        percent = (int(volObj['volume']) / int(volObj['originalVolume']))*100
+        volObj['percent'] = round(percent)
+
+        return volObj
 
     
     def canMakeCocktail(self, name):
@@ -454,7 +426,7 @@ class Main():
             #Check for alcohol mode
             if(self.alcoholMode and ingredient not in self.alcoholList):
                 continue
-            availableAmt = round(float(self.pumpFull[ingredient]['volume']))
+            availableAmt = round(float(self.pumpMap[ingredient]['volume']))
             needAmt = round(float(self.cocktailAmounts[cocktailNum][i]))*self.shotVolume
             print('Ingredient: ' + name + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
             if((availableAmt - needAmt) < 0):
@@ -514,15 +486,15 @@ class Main():
 
     #Gets the current volume of a bottle
     def getBottleVolume(self, bottleName):
-        if(bottleName in self.pumpFull):
-            vol = round(float(self.pumpFull[bottleName]['volume']))
+        if(bottleName in self.pumpMap):
+            vol = round(float(self.pumpMap[bottleName]['volume']))
             return vol
         else:
             return -1.0
 
     #Gets the initial volume of a bottle
     def getBottleInitVolume(self, bottleName):
-        vol = round(float(self.pumpFull[bottleName]['originalVolume']))
+        vol = round(float(self.pumpMap[bottleName]['originalVolume']))
         return vol
 
     def getBottleName(self, bottleNum):
@@ -553,7 +525,7 @@ class Main():
         self.reversePolarity()
 
         #Make a copy of the bottles
-        totalBottles = list(self.pumpFull.keys())
+        totalBottles = list(self.pumpMap.keys())
 
         #Next remove all bottles
         for bottleName in totalBottles:
@@ -566,16 +538,16 @@ class Main():
         #Finally reverse the polarity again
         return 'true'
 
-    #Remove bottle from pumpFull and pumpMap.json
+    #Remove bottle from pumpMap
     def removeBottle(self, bottleName, skipPumps=False):
-        if(bottleName in self.pumpFull and not self.busy_flag and not skipPumps):
+        if(bottleName in self.pumpMap and not self.busy_flag and not skipPumps):
             self.busy_flag = True
             
             #Reverse pump polarity
             self.reversePolarity()
             
             #Turn on the designated pump
-            pumpNum = self.pumpMap[bottleName]
+            pumpNum = self.pumpMap[bottleName]['pumpNum']
             self.pumpOn(pumpNum)
 
             #Pause for a few seconds
@@ -588,9 +560,9 @@ class Main():
         elif(self.busy_flag and not skipPumps):
             return 'busy'
         
-        #Try to remove bottleName from pumpFull array
+        #Try to remove bottleName from pumpMap
         try:
-            self.pumpFull.pop(bottleName)
+            self.pumpMap.pop(bottleName)
         except KeyError as e:
             print(e)
             return 'false'
@@ -600,19 +572,29 @@ class Main():
 
         return 'true'
 
-    #Adds bottle to pumpFull and pumpMap.json
+    #Adds bottle to pumpMap
     def addBottle(self, bottleName, pumpNum, volume, originalVolume):
-        self.pumpFull[bottleName] = {}
-        self.pumpFull[bottleName]['pump'] = pumpNum
-        self.pumpFull[bottleName]['volume'] = volume
-        self.pumpFull[bottleName]['pumpTime'] = 26
-        self.pumpFull[bottleName]['originalVolume'] = originalVolume
+        self.pumpMap[bottleName] = {}
+        self.pumpMap[bottleName]['name'] = bottleName
+        self.pumpMap[bottleName]['pumpNum'] = pumpNum
+        self.pumpMap[bottleName]['volume'] = volume
+        self.pumpMap[bottleName]['originalVolume'] = originalVolume
         self.removeBottleFromList(bottleName)
         self.refreshCocktailFiles()
 
     def writePumpData(self):
-        with open('pumpMap.json', 'w') as file:
-            json.dump(self.pumpFull, file)
+        mainArr = []
+
+        for mapData in self.pumpMap:
+            dataObj = self.pumpData[mapData['pumpNum']]
+            mapObj = mapData
+            mapObj.pop('pumpNum')
+            dataObj['currentBottle'] = mapObj
+
+            mainArr.append(dataObj)
+        
+        with open('pumpConfig.json', 'w') as file:
+            json.dump(mainArr, file)
 
 
     def refreshCocktailFiles(self):

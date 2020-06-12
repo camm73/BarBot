@@ -144,7 +144,7 @@ def setAlcoholMode():
 
 @app.route('/bottleVolumes/', strict_slashes=False, methods=['GET'])
 def getAllVolumes():
-    return main.pumpFull
+    return main.pumpMap
 
 @app.route('/bottlePercent/<int:num>/', strict_slashes=False, methods=['GET'])
 def getBottlePercent(num):
@@ -176,46 +176,12 @@ def reversePolarity():
     print('polarityNormal: ' + str(polarityNormal))
     return str(polarityNormal) + '\n'
 
+#TODO Move this into a method inside main.py
 @app.route('/volume/<string:ingredient>/', strict_slashes=False, methods=['GET'])
 def getIngredientVolume(ingredient):
-    vol = {}
-    vol['ingredient'] = ingredient
-    vol['volume'] = main.pumpFull[ingredient]['volume']
-    vol['originalVolume'] = main.pumpFull[ingredient]['originalVolume']
-    percent = (int(vol['volume']) / int(vol['originalVolume']))*100
-    vol['percent'] = round(percent)
+    vol = main.getIngredientVolume(ingredient)
     return vol
 
-@app.route('/offline/', strict_slashes=False, methods=['GET'])
-def goOffline():
-    try:
-        res = requests.get('http://barbotdisplay:5000/offline/')
-
-        time.sleep(5)
-
-        subprocess.call(['/home/pi/BarBotOffline/controller/goOffline'])
-        print('Going offline')
-
-    except Exception as error:
-        print(error)
-        print('Going offline failed')
-        exit(1)
-
-@app.route('/online/', strict_slashes=False, methods=['GET'])
-def goOnline():
-    #Call display's goOnline REST endpoint first
-    try:
-        res = requests.get('http://192.168.4.1:5000/online/')
-
-        time.sleep(5)
-
-        subprocess.call(['/home/pi/BarBotOffline/controller/goOnline'])
-        print('Going online')
-
-    except Exception as error:
-        print('Going online failed')
-        print(error)
-        exit(1)
 
 def startAPI():
     app.run(debug=False, host='0.0.0.0')
