@@ -25,7 +25,6 @@ class Main():
         self.newBottles = set()
         self.pumpMap = {}
         self.pumpData = {}
-        self.pumpNumbers = {}
         self.cocktailCount = 0
         self.cleanTime = 8  #Regular Time: 12 seconds
         self.shotVolume = 44 #mL
@@ -473,9 +472,8 @@ class Main():
 
         return recipe
 
-    def getBottlePercentage(self, bottleNum):
+    def getBottlePercentage(self, bottleName):
         try:
-            bottleName = self.pumpNumbers[bottleNum]
             now = self.getBottleVolume(bottleName)
             full = self.getBottleInitVolume(bottleName)
             percent = (now/full)*100
@@ -499,9 +497,13 @@ class Main():
 
     def getBottleName(self, bottleNum):
         try:
-            bottleName = self.pumpNumbers[bottleNum]
-            print('Bottle Name: ' + bottleName)
-            return bottleName
+
+            #TODO: Make this more efficient; maybe have a hashmap
+            for ingredient in self.pumpMap:
+                if(self.pumpMap[ingredient]['pumpNum'] == bottleNum):
+                    bottleName = ingredient
+                    return bottleName
+            return 'N/A'
         except Exception as e:
             print(e)
             return 'N/A'

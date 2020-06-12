@@ -142,13 +142,9 @@ def setAlcoholMode():
     main.setAlcoholMode(request.json['enable'])
     return 'true'
 
-@app.route('/bottleVolumes/', strict_slashes=False, methods=['GET'])
-def getAllVolumes():
-    return main.pumpMap
-
-@app.route('/bottlePercent/<int:num>/', strict_slashes=False, methods=['GET'])
-def getBottlePercent(num):
-    return main.getBottlePercentage(num)
+@app.route('/bottlePercent/<string:name>/', strict_slashes=False, methods=['GET'])
+def getBottlePercent(name):
+    return main.getBottlePercentage(name)
 
 @app.route('/getAlcoholMode/', strict_slashes=False, methods=['GET'])
 def getAlcoholMode():
