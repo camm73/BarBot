@@ -43,6 +43,11 @@ def getBottleName(num):
     #print(main.getBottleName(num))
     return main.getBottleName(num)
 
+#Get's number of bottles that the barbot supports
+@app.route('/pumpSupportDetails/', strict_slashes=False, methods=['GET'])
+def getPumpSupportDetails():
+    return main.getPumpSupportDetails()
+
 @app.route('/removeBottle/<string:bottleName>/', strict_slashes=False, methods=['GET'])
 def removeBottle(bottleName):
     res = main.removeBottle(bottleName)

@@ -162,6 +162,22 @@ class Main():
         self.alcoholList.add(bottleName)
         self.writeAlcoholList()
 
+    #Get number/details of bottles supported by Barbot
+    def getPumpSupportDetails(self):
+        pumpArr = []
+
+        #Get details of every pump
+        for num in self.pumpData:
+            pumpObj = {
+                "pumpNum": num,
+                "pumpTime": self.pumpData[num]['pumpTime'],
+                "type": self.pumpData[num]['type']
+            }
+            pumpArr.append(pumpObj)
+
+        pumpArr.sort(key= lambda e: e['pumpNum'])
+
+        return pumpArr    
     
     #Add cocktail recipe to BarBot-Recipes Table in DynamoDB
     def addCocktailRecipe(self, recipe):
@@ -236,6 +252,7 @@ class Main():
             data = json.load(file)
 
         self.newBottles = set(data)
+        print('NEW BOTTLES:')
         print(self.newBottles)
 
 
@@ -291,14 +308,14 @@ class Main():
         #Now we need to turn on pumps for respective ingredients for specified times
         i = 0
         waitTime = 0
-        biggestAmt = 0
-        biggestPumpNum = -1
+        biggestTime = 0
         for ingredient in self.cocktailIngredients[num]:
             #Skip pumping non-alcohol ingredients
             if(self.alcoholMode and ingredient not in self.alcoholList):
                 print(ingredient + ' is not alcohol. Skipping to next ingredient...')
                 continue
 
+            print('Starting pump for ingredient: ' + ingredient)
             #Create threads to handle running the pumps
             pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient]['pumpNum'], self.cocktailAmounts[num][i]])
             pumpThread.start()
@@ -307,12 +324,11 @@ class Main():
             print('Ingredient: ' + str(ingredient))
             self.adjustVolumeData(ingredient, self.cocktailAmounts[num][i])
 
-            if(self.cocktailAmounts[num][i] > biggestAmt):
-                biggestAmt = self.cocktailAmounts[num][i]
-                biggestPumpNum = self.pumpMap[ingredient]['pumpNum']
+            if(self.cocktailAmounts[num][i] > biggestTime):
+                biggestTime = (self.cocktailAmounts[num][i]) * self.pumpData[self.pumpMap[ingredient]['pumpNum']]['pumpTime']
             i += 1
         
-        waitTime = biggestAmt*self.pumpData[biggestPumpNum]['pumpTime']
+        waitTime = biggestTime
         print('Wait Time: ' + str(waitTime))
         time.sleep(waitTime + 2)
         print("Done making cocktail!")
@@ -349,6 +365,7 @@ class Main():
             self.pumpData[pumpNum]['pumpTime'] = time
             self.writePumpData()
         except Exception as e:
+            print('ERROR: CALIBRATING PUMP FAILED')
             print(e)
             return 'false'
 
@@ -385,12 +402,18 @@ class Main():
 
         self.busy_flag = True
         for pump in self.pumpData:
-            GPIO.output(self.pumpData[pump]['gpio'], GPIO.LOW)
+            if(removeIgnore and self.pumpData[pump]['type'] == 'regular'):
+                GPIO.output(self.pumpData[pump]['gpio'], GPIO.LOW)
+            elif(not removeIgnore):
+                GPIO.output(self.pumpData[pump]['gpio'], GPIO.LOW)
 
         time.sleep(self.cleanTime)
 
         for pump in self.pumpData:
-            GPIO.output(self.pumpData[pump]['gpio'], GPIO.HIGH)
+            if(removeIgnore and self.pumpData[pump]['type'] == 'regular'):
+                GPIO.output(self.pumpData[pump]['gpio'], GPIO.HIGH)
+            elif(not removeIgnore):
+                GPIO.output(self.pumpData[pump]['gpio'], GPIO.HIGH)
         
         if(not removeIgnore):
             self.busy_flag = False
@@ -427,7 +450,7 @@ class Main():
                 continue
             availableAmt = round(float(self.pumpMap[ingredient]['volume']))
             needAmt = round(float(self.cocktailAmounts[cocktailNum][i]))*self.shotVolume
-            print('Ingredient: ' + name + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
+            print('Ingredient: ' + ingredient + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
             if((availableAmt - needAmt) < 0):
                 return False
         return True
@@ -479,6 +502,7 @@ class Main():
             percent = (now/full)*100
             return str(int(percent))
         except Exception as e:
+            print('Error getting bottle percentage!')
             print(e)
             return 'N/A'
 
@@ -505,6 +529,7 @@ class Main():
                     return bottleName
             return 'N/A'
         except Exception as e:
+            print('Error getting bottle name!')
             print(e)
             return 'N/A'
 
@@ -542,6 +567,12 @@ class Main():
 
     #Remove bottle from pumpMap
     def removeBottle(self, bottleName, skipPumps=False):
+        pumpNum = self.pumpMap[bottleName]['pumpNum']
+        
+        #Skip pumping if not a regular pump
+        if(self.pumpData[pumpNum]['type'] != 'regular'):
+            skipPumps = True
+
         if(bottleName in self.pumpMap and not self.busy_flag and not skipPumps):
             self.busy_flag = True
             
@@ -549,7 +580,6 @@ class Main():
             self.reversePolarity()
             
             #Turn on the designated pump
-            pumpNum = self.pumpMap[bottleName]['pumpNum']
             self.pumpOn(pumpNum)
 
             #Pause for a few seconds
@@ -566,6 +596,7 @@ class Main():
         try:
             self.pumpMap.pop(bottleName)
         except KeyError as e:
+            print('Error removing bottle')
             print(e)
             return 'false'
 
@@ -586,22 +617,39 @@ class Main():
 
     def writePumpData(self):
         mainArr = []
+        pumpsDone = set()
 
-        for mapData in self.pumpMap:
-            dataObj = self.pumpData[mapData['pumpNum']]
-            mapObj = mapData
+        for ingredient in self.pumpMap:
+            pumpNum = self.pumpMap[ingredient]['pumpNum']
+            dataObj = self.pumpData[pumpNum].copy()
+            mapObj = self.pumpMap[ingredient].copy()
             mapObj.pop('pumpNum')
             dataObj['currentBottle'] = mapObj
+            pumpsDone.add(pumpNum)
+
+            mainArr.append(dataObj)
+
+        #Add pumps that aren't in pumpMap already (i.e. no bottle connected)
+        for pump in self.pumpData:
+            if(pump in pumpsDone):
+                continue
+            
+            dataObj = self.pumpData[pump]
+            mapObj = {}
+            dataObj['currentBottle'] = mapObj
+            pumpsDone.add(pump)
 
             mainArr.append(dataObj)
         
         with open('pumpConfig.json', 'w') as file:
             json.dump(mainArr, file)
 
+        print('Wrote pump config to file')
+
 
     def refreshCocktailFiles(self):
         self.writePumpData()
-        self.loadPumpMap()
+        self.loadPumpConfig()
         self.loadCocktails()
         self.loadAlcoholList()
         
