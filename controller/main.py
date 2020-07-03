@@ -331,7 +331,7 @@ class Main():
             
             waitTime = biggestTime
             print('Wait Time: ' + str(waitTime))
-            time.sleep(waitTime + 2)
+            time.sleep(waitTime + 1)
             print("Done making cocktail!")
 
             #Update Stat tracking in the cloud
