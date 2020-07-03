@@ -183,6 +183,11 @@ def getIngredientVolume(ingredient):
     vol = main.getIngredientVolume(ingredient)
     return vol
 
+@app.route('/refreshRecipes/', strict_slashes=False, methods=['GET'])
+def refreshRecipes():
+    res = main.refreshCocktailFiles()
+    return res
+
 
 def startAPI():
     app.run(debug=False, host='0.0.0.0')

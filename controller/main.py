@@ -301,42 +301,47 @@ class Main():
             print('Not enough ingredients to make this cocktail.')
             return 'ingredients'
         
-        print('Making cocktail ' + str(self.cocktailNames[num]))
-        self.busy_flag = True
-        self.setupPins()
+        try:
+            print('Making cocktail ' + str(self.cocktailNames[num]))
+            self.busy_flag = True
+            self.setupPins()
 
-        #Now we need to turn on pumps for respective ingredients for specified times
-        i = 0
-        waitTime = 0
-        biggestTime = 0
-        for ingredient in self.cocktailIngredients[num]:
-            #Skip pumping non-alcohol ingredients
-            if(self.alcoholMode and ingredient not in self.alcoholList):
-                print(ingredient + ' is not alcohol. Skipping to next ingredient...')
-                continue
+            #Now we need to turn on pumps for respective ingredients for specified times
+            i = 0
+            waitTime = 0
+            biggestTime = 0
+            for ingredient in self.cocktailIngredients[num]:
+                #Skip pumping non-alcohol ingredients
+                if(self.alcoholMode and ingredient not in self.alcoholList):
+                    print(ingredient + ' is not alcohol. Skipping to next ingredient...')
+                    continue
 
-            print('Starting pump for ingredient: ' + ingredient)
-            #Create threads to handle running the pumps
-            pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient]['pumpNum'], self.cocktailAmounts[num][i]])
-            pumpThread.start()
+                print('Starting pump for ingredient: ' + ingredient)
+                #Create threads to handle running the pumps
+                pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient]['pumpNum'], self.cocktailAmounts[num][i]])
+                pumpThread.start()
 
-            #Adjust volume tracking for each of the pumps
-            print('Ingredient: ' + str(ingredient))
-            self.adjustVolumeData(ingredient, self.cocktailAmounts[num][i])
+                #Adjust volume tracking for each of the pumps
+                print('Ingredient: ' + str(ingredient))
+                self.adjustVolumeData(ingredient, self.cocktailAmounts[num][i])
 
-            if(self.cocktailAmounts[num][i] > biggestTime):
-                biggestTime = (self.cocktailAmounts[num][i]) * self.pumpData[self.pumpMap[ingredient]['pumpNum']]['pumpTime']
-            i += 1
-        
-        waitTime = biggestTime
-        print('Wait Time: ' + str(waitTime))
-        time.sleep(waitTime + 2)
-        print("Done making cocktail!")
+                if(self.cocktailAmounts[num][i] > biggestTime):
+                    biggestTime = (self.cocktailAmounts[num][i]) * self.pumpData[self.pumpMap[ingredient]['pumpNum']]['pumpTime']
+                i += 1
+            
+            waitTime = biggestTime
+            print('Wait Time: ' + str(waitTime))
+            time.sleep(waitTime + 2)
+            print("Done making cocktail!")
 
-        #Update Stat tracking in the cloud
-        incrementCocktail(cocktailName)
+            #Update Stat tracking in the cloud
+            incrementCocktail(cocktailName)
 
-        self.busy_flag = False
+            self.busy_flag = False
+        except Exception as e:
+            print(e)
+            self.busy_flag = False
+            return 'error'
         return 'true'
 
     #Toggles specific pumps for specific amount of time
@@ -422,7 +427,7 @@ class Main():
 
 
     def adjustVolumeData(self, ingredientName, shotAmount):
-        print('Value: ' + self.pumpMap[ingredientName]['volume'])
+        print('Value: ' + str(self.pumpMap[ingredientName]['volume']))
         newVal = round(float(self.pumpMap[ingredientName]['volume'])) - (self.shotVolume*shotAmount)
         print('New Value: ' + str(newVal))
         self.pumpMap[ingredientName]['volume'] = str(newVal)
@@ -499,6 +504,8 @@ class Main():
         try:
             now = self.getBottleVolume(bottleName)
             full = self.getBottleInitVolume(bottleName)
+            if(now == -1 or full == -1):
+                return 'N/A'
             percent = (now/full)*100
             return str(int(percent))
         except Exception as e:
@@ -512,12 +519,15 @@ class Main():
             vol = round(float(self.pumpMap[bottleName]['volume']))
             return vol
         else:
-            return -1.0
+            return -1
 
     #Gets the initial volume of a bottle
     def getBottleInitVolume(self, bottleName):
-        vol = round(float(self.pumpMap[bottleName]['originalVolume']))
-        return vol
+        if(bottleName in self.pumpMap):
+            vol = round(float(self.pumpMap[bottleName]['originalVolume']))
+            return vol
+        else:
+            return -1
 
     def getBottleName(self, bottleNum):
         try:
@@ -546,23 +556,28 @@ class Main():
 
         if(self.busy_flag):
             return 'busy'
-
-        self.busy_flag = True
-        #First reverse the polarity
-        self.reversePolarity()
-
-        #Make a copy of the bottles
-        totalBottles = list(self.pumpMap.keys())
-
-        #Next remove all bottles
-        for bottleName in totalBottles:
-            self.removeBottle(bottleName, skipPumps=True)
         
-        #Run a the clean function to turn on all pumps
-        self.cleanPumps(removeIgnore=True)
-        self.reversePolarity()
-        self.busy_flag = False
-        #Finally reverse the polarity again
+        try:
+            self.busy_flag = True
+            #First reverse the polarity
+            self.reversePolarity()
+
+            #Make a copy of the bottles
+            totalBottles = list(self.pumpMap.keys())
+
+            #Next remove all bottles
+            for bottleName in totalBottles:
+                self.removeBottle(bottleName, skipPumps=True)
+            
+            #Run a the clean function to turn on all pumps
+            self.cleanPumps(removeIgnore=True)
+            
+            #Finally reverse the polarity again
+            self.reversePolarity()
+            self.busy_flag = False
+        except Exception as e:
+            print(e)
+            return 'error'
         return 'true'
 
     #Remove bottle from pumpMap
@@ -648,10 +663,17 @@ class Main():
 
 
     def refreshCocktailFiles(self):
-        self.writePumpData()
-        self.loadPumpConfig()
-        self.loadCocktails()
-        self.loadAlcoholList()
+        try:
+            print("Refreshing cocktail files...")
+            self.writePumpData()
+            self.loadPumpConfig()
+            self.updateLocalRecipes()
+            self.loadCocktails()
+            self.loadAlcoholList()
+        except Exception as e:
+            print(e)
+            return 'error'
+        return 'true'
         
 
 '''
