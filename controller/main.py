@@ -14,11 +14,9 @@ class Main():
         #[26, 19, 13, 6, 5, 21, 20, 16] GPIOS FOR PUMPS
         self.polarityPins = [17, 27] #Pin 17 is #1 and Pin #27 is #2
         self.polarityNormal = True
-        self.cocktailNames = {}
         self.cocktailIngredients = {}
         self.cocktailAmounts = {}
         self.cocktailButtons = {}
-        self.cocktailNumbers = {}
         self.cocktailAvailable = {}
         self.ignoreList = set()
         self.alcoholList = set()
@@ -112,12 +110,11 @@ class Main():
         i = 0
         #Loads all cocktail details into separate python objects
         for cocktails in data['cocktails']:
-            self.cocktailNames[i] = (str(data['cocktails'][i]['name']))
-            self.cocktailIngredients[i] = data['cocktails'][i]['ingredients']
-            self.cocktailAmounts[i] = data['cocktails'][i]['amounts']
-            self.cocktailNumbers[str(data['cocktails'][i]['name'])] = i
-            self.cocktailAvailable[str(data['cocktails'][i]['name'])] = self.isAvailable(str(data['cocktails'][i]['name']))
-            print(self.cocktailNames[i] + " available: " + str(self.cocktailAvailable[str(data['cocktails'][i]['name'])]))
+            cocktailName = str(data['cocktails'][i]['name'])
+            self.cocktailIngredients[cocktailName] = data['cocktails'][i]['ingredients']
+            self.cocktailAmounts[cocktailName] = data['cocktails'][i]['amounts']
+            self.cocktailAvailable[cocktailName] = self.isAvailable(cocktailName)
+            print(cocktailName + " available: " + str(self.cocktailAvailable[cocktailName]))
             i = i+1
         self.cocktailCount = i
 
@@ -265,13 +262,9 @@ class Main():
 
 
     #Scans through the ingredients on each pump and the ingredients needed for this cocktail to determine availability
-    def isAvailable(self, cocktailName):
-        if(cocktailName not in self.cocktailNumbers):
-            return False
-        cocktailNumber = self.cocktailNumbers[cocktailName]
-        
+    def isAvailable(self, cocktailName):    
         if(not self.alcoholMode):
-            for ingredient in self.cocktailIngredients[cocktailNumber]:
+            for ingredient in self.cocktailIngredients[cocktailName]:
                 if(ingredient not in self.pumpMap.keys() and ingredient not in self.ignoreList):
                     print(ingredient + " not available!")
                     return False
@@ -279,7 +272,7 @@ class Main():
                     print("CAN IGNORE INGREDIENT: " + ingredient + '  FOR COCKTAIL: ' + cocktailName)
             return True
         else:
-            for ingredient in self.cocktailIngredients[cocktailNumber]:
+            for ingredient in self.cocktailIngredients[cocktailName]:
                 if(ingredient in self.alcoholList):
                     if(ingredient not in self.pumpMap.keys() and ingredient not in self.ignoreList):
                         print(ingredient + " not available!")
@@ -327,10 +320,6 @@ class Main():
         if(self.busy_flag):
             print('Busy making cocktail!')
             return 'busy'
-            
-        if(cocktailName not in self.cocktailNumbers):
-            return 'available'
-        num = self.cocktailNumbers[cocktailName]
         
         #Check whether the cocktail is available or not
         if(not self.cocktailAvailable[cocktailName]):
@@ -343,7 +332,7 @@ class Main():
             return 'ingredients'
         
         try:
-            print('Making cocktail ' + str(self.cocktailNames[num]))
+            print('Making cocktail ' + cocktailName)
             self.busy_flag = True
             self.setupPins()
 
@@ -351,7 +340,7 @@ class Main():
             i = 0
             waitTime = 0
             biggestTime = 0
-            for ingredient in self.cocktailIngredients[num]:
+            for ingredient in self.cocktailIngredients[cocktailName]:
                 #Skip pumping non-alcohol ingredients
                 if(self.alcoholMode and ingredient not in self.alcoholList):
                     print(ingredient + ' is not alcohol. Skipping to next ingredient...')
@@ -359,15 +348,15 @@ class Main():
 
                 print('Starting pump for ingredient: ' + ingredient)
                 #Create threads to handle running the pumps
-                pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient]['pumpNum'], self.cocktailAmounts[num][i]])
+                pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient]['pumpNum'], self.cocktailAmounts[cocktailName][i]])
                 pumpThread.start()
 
                 #Adjust volume tracking for each of the pumps
                 print('Ingredient: ' + str(ingredient))
-                self.adjustVolumeData(ingredient, self.cocktailAmounts[num][i])
+                self.adjustVolumeData(ingredient, self.cocktailAmounts[cocktailName][i])
 
-                if(self.cocktailAmounts[num][i] > biggestTime):
-                    biggestTime = (self.cocktailAmounts[num][i]) * self.pumpData[self.pumpMap[ingredient]['pumpNum']]['pumpTime']
+                if(self.cocktailAmounts[cocktailName][i] > biggestTime):
+                    biggestTime = (self.cocktailAmounts[cocktailName][i]) * self.pumpData[self.pumpMap[ingredient]['pumpNum']]['pumpTime']
                 i += 1
             
             waitTime = biggestTime
@@ -488,9 +477,8 @@ class Main():
 
     
     def canMakeCocktail(self, name):
-        cocktailNum = self.cocktailNumbers[name]
         i = 0
-        for ingredient in self.cocktailIngredients[cocktailNum]:
+        for ingredient in self.cocktailIngredients[name]:
             #Check for alcohol mode
             if(self.alcoholMode and ingredient not in self.alcoholList):
                 continue
@@ -499,7 +487,7 @@ class Main():
                 continue
 
             availableAmt = round(float(self.pumpMap[ingredient]['volume']))
-            needAmt = round(float(self.cocktailAmounts[cocktailNum][i]))*self.shotVolume
+            needAmt = round(float(self.cocktailAmounts[name][i]))*self.shotVolume
             print('Ingredient: ' + ingredient + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
             if((availableAmt - needAmt) < 0):
                 return False
@@ -510,8 +498,7 @@ class Main():
     def getCocktailList(self):
         availableCocktails = []
         count = 0
-        for i in self.cocktailNames:
-            cocktailName = self.cocktailNames[i]
+        for cocktailName in self.cocktailIngredients.keys():
 
             if(self.cocktailAvailable[cocktailName]):
                 availableCocktails.append(cocktailName)
@@ -535,12 +522,11 @@ class Main():
 
     def getIngredients(self, name):
         print("GETTING INGREDIENTS")
-        cocktailNum = self.cocktailNumbers[name]
         recipe = {}
 
         i = 0
-        for ingredient in self.cocktailIngredients[cocktailNum]:
-            recipe[ingredient] = float(self.cocktailAmounts[cocktailNum][i])
+        for ingredient in self.cocktailIngredients[name]:
+            recipe[ingredient] = float(self.cocktailAmounts[name][i])
             i += 1
 
         return recipe
