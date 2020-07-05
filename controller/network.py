@@ -188,6 +188,34 @@ def refreshRecipes():
     res = main.refreshCocktailFiles()
     return res
 
+@app.route('/ignoreIngredient/', strict_slashes=False, methods=['POST'])
+def ignoreIngredient():
+    #param check
+    if('action' not in request.json or 'ingredient' not in request.json):
+        return 'false'
+
+    action = request.json['action'] #Add or remove
+    item = request.json['ingredient']  #Name of ingredient
+
+    if(action == 'add'):
+        #Add item
+        main.addIgnoreItem(item)
+    elif(action == 'remove'):
+        #Remove item
+        main.removeIgnoreItem(item)
+    else:
+        #Unknown action error
+        return 'false'
+    
+    return 'true'
+
+
+@app.route('/getIgnoreIngredients/', strict_slashes=False, methods=['GET'])
+def getIgnoreIngredients():
+    res = main.getIgnoreIngredients()
+
+    return res
+
 
 def startAPI():
     app.run(debug=False, host='0.0.0.0')

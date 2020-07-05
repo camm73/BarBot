@@ -20,6 +20,7 @@ class Main():
         self.cocktailButtons = {}
         self.cocktailNumbers = {}
         self.cocktailAvailable = {}
+        self.ignoreList = set()
         self.alcoholList = set()
         self.alcoholMode = False
         self.newBottles = set()
@@ -34,8 +35,9 @@ class Main():
         self.loadPumpConfig() #Load configuration of pumpMap and pumpData
         self.setupPins()
         self.loadNewBottles()
-        self.updateLocalRecipes()
         self.loadAlcoholList()
+        self.loadIgnoreList()
+        self.updateLocalRecipes() #Updates local recipes to match cloud; loads recipes locally; checks cocktail availablity
 
 
     #Sets up pins by setting gpio mode and setting initial output
@@ -120,6 +122,26 @@ class Main():
         self.cocktailCount = i
 
 
+    #Loads the list of ingredients to ignore when considering availablity & making cocktail
+    def loadIgnoreList(self):
+        data = None
+
+        with open('ignoreList.json', 'r') as file:
+            data = json.load(file)
+        
+        self.ignoreList = set(data)
+
+
+    #Write ignore list to file
+    def writeIgnoreList(self):
+        ignoreArr = list(self.ignoreList)
+
+        with open('ignoreList.json', 'w') as file:
+            json.dump(ignoreArr, file)
+
+        print('Updated ignore list file')
+
+
     #Loads the list of ingredients that are alcohol
     def loadAlcoholList(self):
         data = {}
@@ -130,6 +152,23 @@ class Main():
         for key in data:
             if(data[key] == True):
                 self.alcoholList.add(key)
+
+    #Adds item to ignore list
+    def addIgnoreItem(self, item):
+        self.ignoreList.add(item)
+        self.writeIgnoreList() #Update local storage
+        self.loadCocktails()  #Reload cocktails with new ignored ingredients
+
+    #Removes item from ignore list
+    def removeIgnoreItem(self, item):
+        if(item in self.ignoreList):
+            self.ignoreList.remove(item)
+            self.writeIgnoreList()  #Updates local storage file
+            self.loadCocktails()  #Reload cocktail list
+
+    #Get ignore ingredient list
+    def getIgnoreIngredients(self):
+        return list(self.ignoreList)
 
     
     #Writes alcohol list to file
@@ -233,14 +272,16 @@ class Main():
         
         if(not self.alcoholMode):
             for ingredient in self.cocktailIngredients[cocktailNumber]:
-                if(ingredient not in self.pumpMap.keys()):
+                if(ingredient not in self.pumpMap.keys() and ingredient not in self.ignoreList):
                     print(ingredient + " not available!")
                     return False
+                elif(ingredient in self.ignoreList):
+                    print("CAN IGNORE INGREDIENT: " + ingredient + '  FOR COCKTAIL: ' + cocktailName)
             return True
         else:
             for ingredient in self.cocktailIngredients[cocktailNumber]:
                 if(ingredient in self.alcoholList):
-                    if(ingredient not in self.pumpMap.keys()):
+                    if(ingredient not in self.pumpMap.keys() and ingredient not in self.ignoreList):
                         print(ingredient + " not available!")
                         return False
             return True
@@ -670,6 +711,7 @@ class Main():
             self.updateLocalRecipes()
             self.loadCocktails()
             self.loadAlcoholList()
+            self.loadIgnoreList()
         except Exception as e:
             print(e)
             return 'error'
