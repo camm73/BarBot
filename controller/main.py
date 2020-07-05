@@ -325,9 +325,9 @@ class Main():
     #Function that crafts the cocktail requested
     def makeCocktail(self, cocktailName):
         if(self.busy_flag):
-            #TODO add some feedback message
             print('Busy making cocktail!')
             return 'busy'
+            
         if(cocktailName not in self.cocktailNumbers):
             return 'available'
         num = self.cocktailNumbers[cocktailName]
@@ -494,6 +494,10 @@ class Main():
             #Check for alcohol mode
             if(self.alcoholMode and ingredient not in self.alcoholList):
                 continue
+            #Check for ignore list
+            if(ingredient in self.ignoreList):
+                continue
+
             availableAmt = round(float(self.pumpMap[ingredient]['volume']))
             needAmt = round(float(self.cocktailAmounts[cocktailNum][i]))*self.shotVolume
             print('Ingredient: ' + ingredient + '   availableAmt: ' + str(availableAmt) + '   needAmt: ' + str(needAmt))
