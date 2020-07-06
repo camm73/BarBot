@@ -192,6 +192,7 @@ def refreshRecipes():
 def ignoreIngredient():
     #param check
     if('action' not in request.json or 'ingredient' not in request.json):
+        print('Error ignoring ingredient')
         return 'false'
 
     action = request.json['action'] #Add or remove
@@ -205,6 +206,7 @@ def ignoreIngredient():
         main.removeIgnoreItem(item)
     else:
         #Unknown action error
+        print('Error ignoring ingredient')
         return 'false'
     
     return 'true'

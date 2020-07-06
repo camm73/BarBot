@@ -152,6 +152,7 @@ class Main():
 
     #Adds item to ignore list
     def addIgnoreItem(self, item):
+        print('Adding: ' + item + ' to ignore list!')
         self.ignoreList.add(item)
         self.writeIgnoreList() #Update local storage
         self.loadCocktails()  #Reload cocktails with new ignored ingredients
@@ -159,6 +160,7 @@ class Main():
     #Removes item from ignore list
     def removeIgnoreItem(self, item):
         if(item in self.ignoreList):
+            print('Removing ' + item + ' from ignore list!')
             self.ignoreList.remove(item)
             self.writeIgnoreList()  #Updates local storage file
             self.loadCocktails()  #Reload cocktail list
@@ -346,6 +348,10 @@ class Main():
                     print(ingredient + ' is not alcohol. Skipping to next ingredient...')
                     continue
 
+                if(ingredient in self.ignoreList):
+                    print(ingredient + ' is in ignore list. Skipping to next ingredient...')
+                    continue
+
                 print('Starting pump for ingredient: ' + ingredient)
                 #Create threads to handle running the pumps
                 pumpThread = threading.Thread(target=self.pumpToggle, args=[self.pumpMap[ingredient]['pumpNum'], self.cocktailAmounts[cocktailName][i]])
@@ -361,7 +367,7 @@ class Main():
             
             waitTime = biggestTime
             print('Wait Time: ' + str(waitTime))
-            time.sleep(waitTime + 1)
+            time.sleep(waitTime + 2)
             print("Done making cocktail!")
 
             #Update Stat tracking in the cloud
