@@ -233,6 +233,7 @@ class Main():
 
         if(newRecipeRaw == {}):
             print('Error getting recipes from DynamoDB')
+            self.loadCocktails()
             return False
 
         newCocktailJSON = {'cocktails': []}

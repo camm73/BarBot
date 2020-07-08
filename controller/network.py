@@ -28,7 +28,7 @@ def callMakeCocktail(name):
 
 @app.route('/clean/', strict_slashes=False, methods=['GET'])
 def callCleanPumps():
-    res = main.cleanPumps()
+    res = main.cleanPumps(removeIgnore=True)
     return res
 
 @app.route('/ingredients/<string:cocktail>/', strict_slashes=False, methods=['GET'])

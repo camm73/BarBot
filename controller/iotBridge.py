@@ -8,6 +8,7 @@ class IoTManager():
         self.main = main
         self.iotDetails = {}
         self.thingName = 'BarBot'
+        self.disabled = False
         
         #Load AWS IoT Core details from json file
         with open('./certs/iotDetails.json', 'r') as file:
@@ -22,24 +23,31 @@ class IoTManager():
         self.mqttClient.configureConnectDisconnectTimeout(15)
         self.mqttClient.configureMQTTOperationTimeout(5)
 
-        self.mqttClient.connect()
-        self.mqttClient.subscribe('barbot-main', 1, self.parse_message)
-        print('Connected to AWS IoT Core!')
+        try:
+            self.mqttClient.connect()
+            self.mqttClient.subscribe('barbot-main', 1, self.parse_message)
+            print('Connected to AWS IoT Core!')
 
-        #Setup Shadow handler
-        self.shadow_client = AWSIoTMQTTShadowClient('barbot-shadow')
-        self.shadow_client.configureEndpoint(self.iotDetails['endpoint'], 8883)
-        self.shadow_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot.private.key', './certs/BarBot.cert.pem')
-        self.shadow_client.configureAutoReconnectBackoffTime(1, 32, 20)
-        self.shadow_client.configureConnectDisconnectTimeout(10)
-        self.shadow_client.configureMQTTOperationTimeout(5)
+            #Setup Shadow handler
+            self.shadow_client = AWSIoTMQTTShadowClient('barbot-shadow')
+            self.shadow_client.configureEndpoint(self.iotDetails['endpoint'], 8883)
+            self.shadow_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot.private.key', './certs/BarBot.cert.pem')
+            self.shadow_client.configureAutoReconnectBackoffTime(1, 32, 20)
+            self.shadow_client.configureConnectDisconnectTimeout(10)
+            self.shadow_client.configureMQTTOperationTimeout(5)
 
-        self.shadow_client.connect()
-        print("Connected to BarBot's IoT Shadow")
+            self.shadow_client.connect()
+            print("Connected to BarBot's IoT Shadow")
 
-        self.shadow_handler = self.shadow_client.createShadowHandlerWithName(self.thingName, True)
+            self.shadow_handler = self.shadow_client.createShadowHandlerWithName(self.thingName, True)
+        except Exception as e:
+            print(e)
+            self.disabled = True
+
 
     def parse_message(self, client, userdata, message):
+        if(self.disabled):
+            return
         real_message = json.loads(message.payload)
         action = real_message['action']
         if('data' in real_message):
@@ -66,10 +74,14 @@ class IoTManager():
 
     #Updates BarBot's IoT shadow    
     def update_shadow(self, jsonData):
+        if(self.disabled):
+            return
         self.shadow_handler.shadowUpdate(json.dumps(jsonData), self.update_callback, 5)
 
     #Callback function for BarBot's IoT
     def update_callback(self, payload, responseStatus, token):
+        if(self.disabled):
+            return
         if(responseStatus == 'timeout'):
             print('There was a timeout updating the shadow')
         elif(responseStatus == 'accepted'):
