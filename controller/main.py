@@ -369,12 +369,12 @@ class Main():
             waitTime = biggestTime
             print('Wait Time: ' + str(waitTime))
             time.sleep(waitTime + 2)
+            self.busy_flag = False
             print("Done making cocktail!")
 
             #Update Stat tracking in the cloud
             incrementCocktail(cocktailName)
 
-            self.busy_flag = False
         except Exception as e:
             print(e)
             self.busy_flag = False
@@ -442,7 +442,9 @@ class Main():
 
         print('Cleaning pumps!')
 
-        self.busy_flag = True
+        if(not removeIgnore):
+            self.busy_flag = True
+
         for pump in self.pumpData:
             if(removeIgnore and self.pumpData[pump]['type'] == 'regular'):
                 GPIO.output(self.pumpData[pump]['gpio'], GPIO.LOW)
