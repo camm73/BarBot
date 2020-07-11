@@ -1,6 +1,0 @@
-#!/bin/bash
-
-until python3 /home/pi/BarBot/display/display.py; do
-	echo "Restarting"
-done
-exit 0

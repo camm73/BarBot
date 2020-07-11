@@ -1,7 +1,7 @@
 import json
 import boto3
 
-dynamodb = boto3.client('dynamodb')
+dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 
 #Update the number of times a specific cocktail has been created
 def increment_cocktail(cocktail_name):
