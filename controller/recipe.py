@@ -6,21 +6,21 @@ import decimal
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 table = dynamodb.Table('BarBot-Recipe')
 
-def uploadRecipe(recipe):
+def upload_recipe(recipe):
     try:
-        amountItem = getAmounts(recipe)
+        amount_item = get_amounts(recipe)
 
-        exampleObject = {
+        example_object = {
             'cocktailName': recipe['name'],
             'ingredients': recipe['ingredients'],
-            'amounts': amountItem
+            'amounts': amount_item
         }
         
         response = table.put_item(
             Item={
                 'cocktailName': recipe['name'].lower(), #MUST BE LOWERCASE BECAUSE DYNAMO IS CASE SENSITIVE FOR KEYS
                 'ingredients': recipe['ingredients'],
-                'amounts': amountItem
+                'amounts': amount_item
             }
         )
         
@@ -31,19 +31,19 @@ def uploadRecipe(recipe):
         print(e)
         return False
 
-def getAmounts(recipe):
+def get_amounts(recipe):
     data = {}
     for i in range(0, len(recipe['ingredients'])):
         data[recipe['ingredients'][i]] = decimal.Decimal(str(recipe['amounts'][i]))
     
     return data
 
-def getRecipe(recipeName):
+def get_recipe(recipe_name):
 
     try:
         response = table.get_item(
             Key={
-                'cocktailName': recipeName.lower() #MUST BE LOWERCASE
+                'cocktailName': recipe_name.lower() #MUST BE LOWERCASE
             }
         )
     except Exception as e:
@@ -56,14 +56,14 @@ def getRecipe(recipeName):
 
 
 #Perform a table scan to return a list of all of the recipes
-def getAllRecipes():
-    newCocktails = {}
+def get_all_recipes():
+    new_cocktails = {}
     try:
         response = table.scan()
 
         for i in response['Items']:
-            cocktailData = json.dumps(i, cls=DecimalEncoder)
-            newCocktails[i['cocktailName']] = cocktailData
+            cocktail_data = json.dumps(i, cls=DecimalEncoder)
+            new_cocktails[i['cocktailName']] = cocktail_data
 
         while 'LastEvaluatedKey' in response:
             response = table.scan(
@@ -71,14 +71,14 @@ def getAllRecipes():
             )
 
             for i in response['Items']:
-                cocktailData = json.dumps(i, cls=DecimalEncoder)
-                newCocktails[cocktailData['cocktailName']] = cocktailData
+                cocktail_data = json.dumps(i, cls=DecimalEncoder)
+                new_cocktails[cocktail_data['cocktailName']] = cocktail_data
 
     except Exception as e:
         print(e)
         return {}
 
-    return newCocktails
+    return new_cocktails
 
 
 # Helper class to convert a DynamoDB item to JSON.

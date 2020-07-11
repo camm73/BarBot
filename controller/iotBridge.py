@@ -6,31 +6,31 @@ class IoTManager():
 
     def __init__(self, main):
         self.main = main
-        self.iotDetails = {}
-        self.thingName = 'BarBot'
+        self.iot_details = {}
+        self.thing_name = 'BarBot'
         self.disabled = False
         
         #Load AWS IoT Core details from json file
         with open('./certs/iotDetails.json', 'r') as file:
-            self.iotDetails = json.load(file)
+            self.iot_details = json.load(file)
 
-        self.mqttClient = AWSIoTMQTTClient('barbot')
-        self.mqttClient.configureEndpoint(self.iotDetails['endpoint'], 8883)
-        self.mqttClient.configureCredentials('./certs/root-CA.crt', './certs/BarBot.private.key', './certs/BarBot.cert.pem')
+        self.mqtt_client = AWSIoTMQTTClient('barbot')
+        self.mqtt_client.configureEndpoint(self.iot_details['endpoint'], 8883)
+        self.mqtt_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot.private.key', './certs/BarBot.cert.pem')
 
-        self.mqttClient.configureOfflinePublishQueueing(0)
-        self.mqttClient.configureDrainingFrequency(2)
-        self.mqttClient.configureConnectDisconnectTimeout(15)
-        self.mqttClient.configureMQTTOperationTimeout(5)
+        self.mqtt_client.configureOfflinePublishQueueing(0)
+        self.mqtt_client.configureDrainingFrequency(2)
+        self.mqtt_client.configureConnectDisconnectTimeout(15)
+        self.mqtt_client.configureMQTTOperationTimeout(5)
 
         try:
-            self.mqttClient.connect()
-            self.mqttClient.subscribe('barbot-main', 1, self.parse_message)
+            self.mqtt_client.connect()
+            self.mqtt_client.subscribe('barbot-main', 1, self.parse_message)
             print('Connected to AWS IoT Core!')
 
             #Setup Shadow handler
             self.shadow_client = AWSIoTMQTTShadowClient('barbot-shadow')
-            self.shadow_client.configureEndpoint(self.iotDetails['endpoint'], 8883)
+            self.shadow_client.configureEndpoint(self.iot_details['endpoint'], 8883)
             self.shadow_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot.private.key', './certs/BarBot.cert.pem')
             self.shadow_client.configureAutoReconnectBackoffTime(1, 32, 20)
             self.shadow_client.configureConnectDisconnectTimeout(10)
@@ -39,7 +39,7 @@ class IoTManager():
             self.shadow_client.connect()
             print("Connected to BarBot's IoT Shadow")
 
-            self.shadow_handler = self.shadow_client.createShadowHandlerWithName(self.thingName, True)
+            self.shadow_handler = self.shadow_client.createShadowHandlerWithName(self.thing_name, True)
         except Exception as e:
             print(e)
             self.disabled = True
@@ -54,37 +54,37 @@ class IoTManager():
             data = real_message['data']
 
         if(action == 'makeCocktail'):
-            self.main.makeCocktail(data.lower())
+            self.main.make_cocktail(data.lower())
         elif(action == 'alcoholMode'):
             if(data == True or data == False):
-                self.main.setAlcoholMode(data)
+                self.main.set_alcohol_mode(data)
             else:
                 print('Not a valid alcoholMode setting!')
         elif(action == 'getMenu'):
-            cocktailArray = self.main.getCocktailList()
-            retPackage = {
+            cocktail_array = self.main.get_cocktail_list()
+            ret_package = {
                 'action': 'response',
-                'data': cocktailArray
+                'data': cocktail_array
             }
             
             #Update the shadow
-            self.update_shadow(retPackage)
+            self.update_shadow(ret_package)
         elif(action == 'message'):
             print(data)
 
     #Updates BarBot's IoT shadow    
-    def update_shadow(self, jsonData):
+    def update_shadow(self, json_data):
         if(self.disabled):
             return
-        self.shadow_handler.shadowUpdate(json.dumps(jsonData), self.update_callback, 5)
+        self.shadow_handler.shadowUpdate(json.dumps(json_data), self.update_callback, 5)
 
     #Callback function for BarBot's IoT
-    def update_callback(self, payload, responseStatus, token):
+    def update_callback(self, payload, response_status, token):
         if(self.disabled):
             return
-        if(responseStatus == 'timeout'):
+        if(response_status == 'timeout'):
             print('There was a timeout updating the shadow')
-        elif(responseStatus == 'accepted'):
+        elif(response_status == 'accepted'):
             print("Successfully updated barbot's shadow")
-        elif(responseStatus == 'rejected'):
+        elif(response_status == 'rejected'):
             print("Shadow update was rejected")

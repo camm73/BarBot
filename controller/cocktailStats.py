@@ -4,13 +4,13 @@ import boto3
 dynamodb = boto3.client('dynamodb')
 
 #Update the number of times a specific cocktail has been created
-def incrementCocktail(cocktailName):
+def increment_cocktail(cocktail_name):
     try:
         res = dynamodb.update_item(
             TableName='BarBot-cocktailStats',
             Key={
                 'cocktailName': {
-                    'S': cocktailName
+                    'S': cocktail_name
                 }
             },
             ExpressionAttributeNames= {
@@ -25,12 +25,12 @@ def incrementCocktail(cocktailName):
             ReturnValues='UPDATED_NEW'
         )
     except Exception as e:
-        print(cocktailName + ' not in database yet. Creating...')
+        print(cocktail_name + ' not in database yet. Creating...')
         dynamodb.put_item(
             TableName='BarBot-cocktailStats',
             Item={
                 'cocktailName': {
-                    'S': cocktailName
+                    'S': cocktail_name
                 },
                 'count': {
                     'N': '1'

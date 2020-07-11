@@ -1,21 +1,21 @@
 
 
-def nameToUpper(name):
-    newWord = True
-    newName = ''
+def name_to_upper(name):
+    new_word = True
+    new_name = ''
     for i in range(0, len(name)):
         #Capitalize all first letters
-        if(newWord and name[i].isalpha()):
-            newName += name[i].upper()
-            newWord = False
+        if(new_word and name[i].isalpha()):
+            new_name += name[i].upper()
+            new_word = False
 
         #Reset newWord after a space character
         elif(name[i] == ' '):
-            newName += name[i]
-            newWord = True
+            new_name += name[i]
+            new_word = True
         
         #Otherwise just include the original char
         else:
-            newName += name[i]
+            new_name += name[i]
     
-    return newName
+    return new_name
