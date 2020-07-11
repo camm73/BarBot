@@ -609,6 +609,9 @@ class Main():
             for bottleName in totalBottles:
                 self.removeBottle(bottleName, skipPumps=True)
             
+            #Refresh files after removing all bottles
+            self.refreshCocktailFiles()
+            
             #Run a the clean function to turn on all pumps
             self.cleanPumps(removeIgnore=True)
             
@@ -656,7 +659,10 @@ class Main():
             return 'false'
 
         self.addNewBottleToList(bottleName)
-        self.refreshCocktailFiles()
+
+        #Don't want to refresh too many times
+        if(not skipPumps):
+            self.refreshCocktailFiles()
 
         return 'true'
 
