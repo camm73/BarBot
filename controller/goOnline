@@ -1,9 +1,0 @@
-#!/bin/bash
-
-cd /etc/wpa_supplicant/
-
-sudo cp wpa_supplicant.online wpa_supplicant.conf
-
-sleep 1
-
-sudo reboot

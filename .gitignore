@@ -1,1 +1,3 @@
 /controller/certs/*
+*/__pycache__/
+*.pyc
