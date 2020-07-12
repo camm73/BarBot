@@ -159,6 +159,16 @@ def pump_off(num):
     main.pump_off(num)
     return "Pump off!\n"
 
+@app.route('/pressureOn/<int:num>/', strict_slashes=False, methods=['GET'])
+def pressure_on(num):
+    main.pressure_on(num)
+    return 'true'
+
+@app.route('/pressureOff/<int:num>/', strict_slashes=False, methods=['GET'])
+def pressure_off(num):
+    main.pressure_off(num)
+    return 'true'
+
 @app.route('/calibrate/<int:num>/time/<float:time>/', strict_slashes=False, methods=['GET'])
 @app.route('/calibrate/<int:num>/time/<int:time>/', strict_slashes=False, methods=['GET'])
 def calibrate_pump(num, time):

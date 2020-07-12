@@ -12,7 +12,8 @@ class Main():
 
     def __init__(self):
         #[26, 19, 13, 6, 5, 21, 20, 16] GPIOS FOR PUMPS
-        self.polarity_pins = [17, 27] #Pin 17 is #1 and Pin #27 is #2
+        self.polarity_pins = []
+        self.pressure_pins = []
         self.polarity_normal = True
         self.cocktail_ingredients = {}
         self.cocktail_amounts = {}
@@ -30,6 +31,7 @@ class Main():
         self.busy_flag = False
         self.window = None
 
+        self.load_settings() #Load settings
         self.load_pump_config() #Load configuration of pumpMap and pumpData
         self.setup_pins()
         self.load_new_bottles()
@@ -48,11 +50,11 @@ class Main():
                 GPIO.setup(self.pump_data[pump]['gpio'], GPIO.OUT)
                 GPIO.output(self.pump_data[pump]['gpio'], GPIO.HIGH)
 
-            #Turn on signal for #1 relay
+            #Turn off signal for #1 relay
             GPIO.setup(self.polarity_pins[0], GPIO.OUT)
             GPIO.output(self.polarity_pins[0], GPIO.LOW)
 
-            # Turn off signal for #2 relay
+            # Turn on signal for #2 relay
             GPIO.setup(self.polarity_pins[1], GPIO.OUT)
             GPIO.output(self.polarity_pins[1], GPIO.HIGH)
             print("Pins successfully setup!")
@@ -83,6 +85,15 @@ class Main():
                     "originalVolume": pump['currentBottle']['originalVolume'],
                     "pumpNum": pump['pumpNum'] #Should be removed before writing back to file
                 }
+
+    #Loads settings from file
+    def load_settings(self):
+        data = {}
+        with open('settings.json', 'r') as file:
+            data = json.load(file)
+        
+        self.polarity_pins = data['polarityPins']
+        self.pressure_pins = data['pressurePins']
 
 
     #Test function that runs all of the pumps for 3 seconds each
@@ -354,9 +365,26 @@ class Main():
                     continue
 
                 print('Starting pump for ingredient: ' + ingredient)
+
+                pump_num = self.pump_map[ingredient]['pumpNum']
                 #Create threads to handle running the pumps
-                pump_thread = threading.Thread(target=self.pump_toggle, args=[self.pump_map[ingredient]['pumpNum'], self.cocktail_amounts[cocktail_name][i]])
+                pump_thread = threading.Thread(target=self.pump_toggle, args=[pump_num, self.cocktail_amounts[cocktail_name][i]])
                 pump_thread.start()
+
+                #Determine if pressure pumps should be triggered
+                if(self.pump_data[pump_num]['type'] == 'soda'):
+                    percent = self.get_bottle_percentage(ingredient)/100
+                    pressure_time = 6*(1-percent)  #pressure pump time in seconds
+                    
+                    #TODO: Shouldn't have this hard-coded
+                    num = 0
+                    if(pump_num == 9):
+                        num = 0
+                    elif(pump_num == 10):
+                        num = 1
+
+                    pressure_thread = threading.Thread(target=self.pressure_toggle, args=(num, pressure_time,))
+                    pressure_thread.start()
 
                 #Adjust volume tracking for each of the pumps
                 print('Ingredient: ' + str(ingredient))
@@ -399,6 +427,24 @@ class Main():
         pump_pin = self.pump_data[num]['gpio']
         print("Turning off pump: " + str(num))
         GPIO.output(pump_pin, GPIO.HIGH)
+
+    #Turn pressure pump on
+    def pressure_on(self, num):
+        pin = self.pressure_pins[num - 1]
+        print('Turning on pressure pump: ' + str(num))
+        GPIO.output(pin, GPIO.LOW)
+
+    #Turn pressure pump off
+    def pressure_off(self, num):
+        pin = self.pressure_pins[num - 1]
+        print('Turning on pressure pump: ' + str(num))
+        GPIO.output(pin, GPIO.HIGH)
+
+    #Toggle pressure pump for certain amount of time
+    def pressure_toggle(self, num, time):
+        self.pump_on(num)
+        time.sleep(time)
+        self.pump_off(num)
 
     
     #Calibrates a specific pump by setting it's specific pumping time
