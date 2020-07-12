@@ -57,6 +57,14 @@ class Main():
             # Turn on signal for #2 relay
             GPIO.setup(self.polarity_pins[1], GPIO.OUT)
             GPIO.output(self.polarity_pins[1], GPIO.HIGH)
+
+            #Setup pressure pin 1
+            GPIO.setup(self.pressure_pins[0], GPIO.OUT)
+            GPIO.output(self.pressure_pins[0], GPIO.HIGH)
+
+            #Setup pressure pin 2
+            GPIO.setup(self.pressure_pins[1], GPIO.OUT)
+            GPIO.output(self.pressure_pins[1], GPIO.HIGH)
             print("Pins successfully setup!")
         except Exception as e:
             print("Error setting up pump pins: " + str(e))
