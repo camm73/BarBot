@@ -1,4 +1,8 @@
 {
-    "pressurePins": [2, 3],
-    "polarityPins": [17, 27]
+    "pressurePins": {
+        "9": 2,
+        "10": 3
+    },
+    "polarityPins": [17, 27],
+    "abortPins": [23, 24]
 }

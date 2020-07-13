@@ -14,6 +14,7 @@ class Main():
         #[26, 19, 13, 6, 5, 21, 20, 16] GPIOS FOR PUMPS
         self.polarity_pins = []
         self.pressure_pins = []
+        self.abort_pins = [] #In, out
         self.polarity_normal = True
         self.cocktail_ingredients = {}
         self.cocktail_amounts = {}
@@ -58,13 +59,20 @@ class Main():
             GPIO.setup(self.polarity_pins[1], GPIO.OUT)
             GPIO.output(self.polarity_pins[1], GPIO.HIGH)
 
-            #Setup pressure pin 1
-            GPIO.setup(self.pressure_pins[0], GPIO.OUT)
-            GPIO.output(self.pressure_pins[0], GPIO.HIGH)
+            #Setup pressure pins
+            for pump in self.pressure_pins:
+                GPIO.setup(self.pressure_pins[pump], GPIO.OUT)
+                GPIO.output(self.pressure_pins[pump], GPIO.HIGH)
 
-            #Setup pressure pin 2
-            GPIO.setup(self.pressure_pins[1], GPIO.OUT)
-            GPIO.output(self.pressure_pins[1], GPIO.HIGH)
+            '''
+            #Setup abort pins
+            GPIO.setup(self.abort_pins[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            GPIO.setup(self.abort_pins[1], GPIO.OUT)
+            GPIO.output(self.abort_pins[1], GPIO.HIGH)
+
+            GPIO.add_event_detect(self.abort_pins[0], GPIO.RISING, callback=self.abort_pumps)
+            '''
+
             print("Pins successfully setup!")
         except Exception as e:
             print("Error setting up pump pins: " + str(e))
@@ -102,6 +110,7 @@ class Main():
         
         self.polarity_pins = data['polarityPins']
         self.pressure_pins = data['pressurePins']
+        #self.abort_pins = data['abortPins']
 
 
     #Test function that runs all of the pumps for 3 seconds each
@@ -137,6 +146,18 @@ class Main():
             i = i+1
         self.cocktail_count = i
 
+
+    #Aborts all pump functions
+    def abort_pumps(self, channel):
+        print('ABORTING ALL FUNCTIONS')
+        #Turns off all pumps and solenoids
+        for pump_num in self.pump_data:
+            pin = self.pump_data[pump_num]['gpio']
+            GPIO.output(pin, GPIO.HIGH)
+        
+        #Turns of all pressure pumps
+        for press_pin in self.pressure_pins:
+            GPIO.output(pin, GPIO.HIGH)
 
     #Loads the list of ingredients to ignore when considering availablity & making cocktail
     def load_ignore_list(self):
@@ -356,7 +377,7 @@ class Main():
         try:
             print('Making cocktail ' + cocktail_name)
             self.busy_flag = True
-            self.setup_pins()
+            #self.setup_pins()
 
             #Now we need to turn on pumps for respective ingredients for specified times
             i = 0
@@ -381,17 +402,10 @@ class Main():
 
                 #Determine if pressure pumps should be triggered
                 if(self.pump_data[pump_num]['type'] == 'soda'):
-                    percent = self.get_bottle_percentage(ingredient)/100
-                    pressure_time = 6*(1-percent)  #pressure pump time in seconds
-                    
-                    #TODO: Shouldn't have this hard-coded
-                    num = 0
-                    if(pump_num == 9):
-                        num = 0
-                    elif(pump_num == 10):
-                        num = 1
+                    percent = float(self.get_bottle_percentage(ingredient))/100
+                    pressure_time = 6*(1-percent) + 1 + self.cocktail_amounts[cocktail_name][i]  #pressure pump time in seconds
 
-                    pressure_thread = threading.Thread(target=self.pressure_toggle, args=(num, pressure_time,))
+                    pressure_thread = threading.Thread(target=self.pressure_toggle, args=[pump_num, pressure_time])
                     pressure_thread.start()
 
                 #Adjust volume tracking for each of the pumps
@@ -399,7 +413,9 @@ class Main():
                 self.adjust_volume_data(ingredient, self.cocktail_amounts[cocktail_name][i])
 
                 if(self.cocktail_amounts[cocktail_name][i] > biggest_time):
-                    biggest_time = (self.cocktail_amounts[cocktail_name][i]) * self.pump_data[self.pump_map[ingredient]['pumpNum']]['pumpTime']
+                    biggest_time = (self.cocktail_amounts[cocktail_name][i]) * self.pump_data[pump_num]['pumpTime']
+                    print('Amount: ' + str(self.cocktail_amounts[cocktail_name][i]))
+                    print('Pump Time: ' + str(self.pump_data[pump_num]['pumpTime']))
                 i += 1
             
             wait_time = biggest_time
@@ -408,13 +424,18 @@ class Main():
             self.busy_flag = False
             print("Done making cocktail!")
 
-            #Update Stat tracking in the cloud
-            increment_cocktail(cocktail_name)
-
         except Exception as e:
             print(e)
             self.busy_flag = False
             return 'error'
+
+        #Update cloud details
+        try:
+            #Update Stat tracking in the cloud
+            increment_cocktail(cocktail_name)
+        except Exception as e:
+            print(e)
+
         return 'true'
 
     #Toggles specific pumps for specific amount of time
@@ -438,27 +459,27 @@ class Main():
 
     #Turn pressure pump on
     def pressure_on(self, num):
-        pin = self.pressure_pins[num - 1]
+        pin = self.pressure_pins[str(num)]
         print('Turning on pressure pump: ' + str(num))
         GPIO.output(pin, GPIO.LOW)
 
     #Turn pressure pump off
     def pressure_off(self, num):
-        pin = self.pressure_pins[num - 1]
+        pin = self.pressure_pins[str(num)]
         print('Turning on pressure pump: ' + str(num))
         GPIO.output(pin, GPIO.HIGH)
 
     #Toggle pressure pump for certain amount of time
-    def pressure_toggle(self, num, time):
-        self.pump_on(num)
-        time.sleep(time)
-        self.pump_off(num)
+    def pressure_toggle(self, num, pressure_time):
+        self.pressure_on(num)
+        time.sleep(pressure_time)
+        self.pressure_off(num)
 
     
     #Calibrates a specific pump by setting it's specific pumping time
-    def calibrate_pump(self, pump_num, time):
+    def calibrate_pump(self, pump_num, calib_time):
         try:
-            self.pump_data[pump_num]['pumpTime'] = time
+            self.pump_data[pump_num]['pumpTime'] = calib_time
             self.write_pump_data()
         except Exception as e:
             print('ERROR: CALIBRATING PUMP FAILED')
@@ -523,7 +544,7 @@ class Main():
         print('Value: ' + str(self.pump_map[ingredient_name]['volume']))
         new_val = round(float(self.pump_map[ingredient_name]['volume'])) - (self.shot_volume*shot_amount)
         print('New Value: ' + str(new_val))
-        self.pumpMap[ingredient_name]['volume'] = str(new_val)
+        self.pump_map[ingredient_name]['volume'] = str(new_val)
         self.write_pump_data()
 
 
