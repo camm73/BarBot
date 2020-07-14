@@ -2,13 +2,15 @@ from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTShadowClient, AWSIoTMQTTClient
 import time
 import json
 
+#Class manages interfacing with AWS IoT Core
 class IoTManager():
 
+    #Initializes device details and creates IoT Core MQTT connection
     def __init__(self, main):
         self.main = main
         self.iot_details = {}
         self.thing_name = 'BarBot'
-        self.disabled = False
+        self.disabled = False #TODO: load this from the settings file
         
         #Load AWS IoT Core details from json file
         with open('./certs/iotDetails.json', 'r') as file:
@@ -44,7 +46,7 @@ class IoTManager():
             print(e)
             self.disabled = True
 
-
+    #Parses incoming message from MQTT topic and routes to proper function
     def parse_message(self, client, userdata, message):
         if(self.disabled):
             return
