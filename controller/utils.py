@@ -1,5 +1,5 @@
 
-
+#Formats cocktail names with capital letter for start of each word
 def name_to_upper(name):
     new_word = True
     new_name = ''

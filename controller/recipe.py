@@ -6,6 +6,7 @@ import decimal
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 table = dynamodb.Table('BarBot-Recipe')
 
+#Uploads the provided recipe to dynamodb
 def upload_recipe(recipe):
     try:
         amount_item = get_amounts(recipe)
@@ -31,6 +32,7 @@ def upload_recipe(recipe):
         print(e)
         return False
 
+#Get the amounts for a recipe in Dynamo
 def get_amounts(recipe):
     data = {}
     for i in range(0, len(recipe['ingredients'])):
@@ -38,8 +40,8 @@ def get_amounts(recipe):
     
     return data
 
+#Fetches a recipe from dynamo
 def get_recipe(recipe_name):
-
     try:
         response = table.get_item(
             Key={
