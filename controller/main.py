@@ -8,10 +8,12 @@ from utils import name_to_upper
 from cocktailStats import increment_cocktail
 import json
 
+
+#This is the class where BarBot's primary functionality is defined
 class Main():
 
+    #Initialize all class variables
     def __init__(self):
-        #[26, 19, 13, 6, 5, 21, 20, 16] GPIOS FOR PUMPS
         self.polarity_pins = []
         self.pressure_pins = []
         self.abort_pins = [] #In, out
@@ -32,12 +34,13 @@ class Main():
         self.busy_flag = False
         self.window = None
 
-        self.load_settings() #Load settings
+        #Configure hardware and load data from cloud & local config files
+        self.load_settings() #Load settings file
         self.load_pump_config() #Load configuration of pumpMap and pumpData
-        self.setup_pins()
-        self.load_new_bottles()
-        self.load_alcohol_list()
-        self.load_ignore_list()
+        self.setup_pins() #Setup GPIO pins
+        self.load_new_bottles() #Load bottle list from local file
+        self.load_alcohol_list() #Load list of ingredients listed as alcohol
+        self.load_ignore_list() #Load list of ingredients to be ignored in determining menu
         self.update_local_recipes() #Updates local recipes to match cloud; loads recipes locally; checks cocktail availablity
 
 
@@ -46,8 +49,9 @@ class Main():
         try:
             print("Setting up pump pins...")
             GPIO.setmode(GPIO.BCM)
-            for pump in self.pump_data:
 
+            #Set all peristaltic pump relay pins to HIGH (turns pumps off)
+            for pump in self.pump_data:
                 GPIO.setup(self.pump_data[pump]['gpio'], GPIO.OUT)
                 GPIO.output(self.pump_data[pump]['gpio'], GPIO.HIGH)
 
@@ -85,6 +89,7 @@ class Main():
         with open('pumpConfig.json', 'r') as file:
             data = json.load(file)
 
+        #Save data into class variable
         for pump in data:
             self.pump_data[pump['pumpNum']] = {
                 "pumpNum": pump['pumpNum'],
@@ -93,13 +98,13 @@ class Main():
                 "pumpTime": pump['pumpTime']
             }
 
-            #Make sure there is a bottle on the pump
+            #Make sure there is a bottle on the pump before adding to pump_map
             if(pump['currentBottle'] != {}):
                 self.pump_map[pump['currentBottle']['name']] = {
                     "name": pump['currentBottle']['name'],
                     "volume": pump['currentBottle']['volume'],
                     "originalVolume": pump['currentBottle']['originalVolume'],
-                    "pumpNum": pump['pumpNum'] #Should be removed before writing back to file
+                    "pumpNum": pump['pumpNum'] #NOTE: Should be removed before writing back to file
                 }
 
     #Loads settings from file
@@ -127,9 +132,8 @@ class Main():
             GPIO.cleanup()
             exit()
 
-
+    #Load cocktails from local recipe cache file
     def load_cocktails(self):
-        #Load cocktails from json file
         data = {}
         with open('cocktails.json', 'r') as file:
             data = json.load(file)
@@ -214,7 +218,6 @@ class Main():
     def write_alcohol_list(self):
 
         data = {}
-
         all_bottles = self.new_bottles
 
         #Add bottles that are currently on pumps
@@ -253,14 +256,14 @@ class Main():
             }
             pump_arr.append(pump_obj)
 
-        pump_arr.sort(key= lambda e: e['pumpNum'])
+        pump_arr.sort(key= lambda e: e['pumpNum']) #Make sure result is sorted by pumpNum
 
-        return pump_arr    
+        return pump_arr
     
     #Add cocktail recipe to BarBot-Recipes Table in DynamoDB
     def add_cocktail_recipe(self, recipe):
         if(upload_recipe(recipe)):
-            #TODO: Need to update the local recipe list json file
+            #Updates the local recipe cache json file
             res = self.update_local_recipes()
             if(res == False):
                 return 'false'
@@ -412,7 +415,8 @@ class Main():
                 print('Ingredient: ' + str(ingredient))
                 self.adjust_volume_data(ingredient, self.cocktail_amounts[cocktail_name][i])
 
-                if(self.cocktail_amounts[cocktail_name][i] > biggest_time):
+                #Finds which ingredient has the longest pump time required
+                if(self.cocktail_amounts[cocktail_name][i] * self.pump_data[pump_num]['pumpTime'] > biggest_time):
                     biggest_time = (self.cocktail_amounts[cocktail_name][i]) * self.pump_data[pump_num]['pumpTime']
                     print('Amount: ' + str(self.cocktail_amounts[cocktail_name][i]))
                     print('Pump Time: ' + str(self.pump_data[pump_num]['pumpTime']))
@@ -429,7 +433,7 @@ class Main():
             self.busy_flag = False
             return 'error'
 
-        #Update cloud details
+        #Update cloud details (separate from above to avoid returning error if this fails)
         try:
             #Update Stat tracking in the cloud
             increment_cocktail(cocktail_name)
@@ -520,14 +524,16 @@ class Main():
         if(not remove_ignore):
             self.busy_flag = True
 
+        #Turn all pumps on (except for soda pumps)
         for pump in self.pump_data:
             if(remove_ignore and self.pump_data[pump]['type'] == 'regular'):
                 GPIO.output(self.pump_data[pump]['gpio'], GPIO.LOW)
             elif(not remove_ignore):
-                GPIO.output(self.pump_data[pump]['gpio'], GPIO.LOW)
+                GPIO.output(self.pump_data[pump]['gpio'], GPIO.LOW) #TODO: SEE IF THIS IS NECESSARY TO CHECK REMOVE_IGNORE
 
         time.sleep(self.clean_time)
 
+        #Turn all pumps off (ignore soda pumps)
         for pump in self.pump_data:
             if(remove_ignore and self.pump_data[pump]['type'] == 'regular'):
                 GPIO.output(self.pump_data[pump]['gpio'], GPIO.HIGH)
@@ -539,7 +545,7 @@ class Main():
         
         return 'true'
 
-
+    #Adjusts the volume an ingredient after a certain amount is poured
     def adjust_volume_data(self, ingredient_name, shot_amount):
         print('Value: ' + str(self.pump_map[ingredient_name]['volume']))
         new_val = round(float(self.pump_map[ingredient_name]['volume'])) - (self.shot_volume*shot_amount)
@@ -560,6 +566,7 @@ class Main():
         return vol_obj
 
     
+    #Checks whether it is possible to make a given cocktail
     def can_make_cocktail(self, name):
         i = 0
         for ingredient in self.cocktail_ingredients[name]:
@@ -604,6 +611,7 @@ class Main():
 
         return recipe
 
+    #Get's ingredients for a specified recipe
     def get_ingredients(self, name):
         print("GETTING INGREDIENTS")
         recipe = {}
@@ -615,6 +623,7 @@ class Main():
 
         return recipe
 
+    #Get's the percentage full a bottle is
     def get_bottle_percentage(self, bottle_name):
         try:
             now = self.get_bottle_volume(bottle_name)
@@ -644,6 +653,7 @@ class Main():
         else:
             return -1
 
+    #Gets the name of the bottle on a given pump
     def get_bottle_name(self, bottle_num):
         try:
 
@@ -751,6 +761,7 @@ class Main():
         self.remove_bottle_from_list(bottle_name)
         self.refresh_cocktail_files()
 
+    #Formats and writes pump_map and pump_data objects to the pumpConfig.json file
     def write_pump_data(self):
         main_arr = []
         pumps_done = set()
@@ -782,7 +793,7 @@ class Main():
 
         print('Wrote pump config to file')
 
-
+    #Refreshes all of the local cache files
     def refresh_cocktail_files(self):
         try:
             print("Refreshing cocktail files...")
