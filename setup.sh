@@ -17,9 +17,17 @@ fi
 echo "================================================"
 echo "Installing necessary python packages for BarBot..."
 
-/usr/bin/python3 -m pip install flask Flask-API boto3 AWSIoTPythonSDK RPi.GPIO
+/usr/bin/python3 -m pip install flask Flask-API boto3 AWSIoTPythonSDK RPi.GPIO awscli
 
+export PATH=/home/pi/.local/bin:$PATH
 echo "Done installing python packages."
+echo "================================================"
+
+echo "You will now setup you AWS credentials. Please type them when prompted..."
+sleep 2
+aws configure
+echo "Your AWS credentials have been set up successfully!"
+
 echo "================================================"
 
 FILE=/usr/local/bin/rmate
