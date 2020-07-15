@@ -34,6 +34,14 @@ then
 else
 	echo "rmate is already installed. Skipping..."
 fi
+echo "================================================"
+
+echo "Setting up BarBot systemd service"
+sudo cp /home/pi/BarBot/controller/barbot.service /etc/systemd/system/barbot.service
+sleep 1
+sudo systemctl enable barbot.service
+echo "BarBot startup service successfully setup"
+echo "================================================"
 
 echo "Changing default hostname to 'barbot'"
 sudo hostnamectl set-hostname 'barbot'
