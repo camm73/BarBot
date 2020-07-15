@@ -20,6 +20,7 @@ echo "Installing necessary python packages for BarBot..."
 /usr/bin/python3 -m pip install flask Flask-API boto3 AWSIoTPythonSDK RPi.GPIO
 
 echo "Done installing python packages."
+echo "================================================"
 
 FILE=/usr/local/bin/rmate
 if [ -f FILE ];
@@ -34,5 +35,12 @@ else
 	echo "rmate is already installed. Skipping..."
 fi
 
-echo "BarBot setup is complete"
+echo "Changing default hostname to 'barbot'"
+sudo hostnamectl set-hostname 'barbot'
+echo "Hostname successfully changed"
+echo "================================================"
+
+echo "BarBot setup is complete! BarBot will now reboot itself..."
+sleep 6
+sudo reboot
 exit 0
