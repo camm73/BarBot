@@ -23,7 +23,7 @@ export PATH=/home/pi/.local/bin:$PATH
 echo "Done installing python packages."
 echo "================================================"
 
-echo "You will now setup you AWS credentials. Please type them when prompted..."
+echo "You will now setup you AWS credentials for the AWS CLI. Please type them when prompted..."
 sleep 2
 aws configure
 echo "Your AWS credentials have been set up successfully!"

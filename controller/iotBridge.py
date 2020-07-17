@@ -1,6 +1,7 @@
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTShadowClient, AWSIoTMQTTClient
 import time
 import json
+from os import path
 
 #Class manages interfacing with AWS IoT Core
 class IoTManager():
@@ -11,6 +12,10 @@ class IoTManager():
         self.iot_details = {}
         self.thing_name = 'BarBot'
         self.disabled = False #TODO: load this from the settings file
+
+        if not path.exists('./certs/iotDetails.json'):
+            self.disabled = True
+            return
         
         #Load AWS IoT Core details from json file
         with open('./certs/iotDetails.json', 'r') as file:
