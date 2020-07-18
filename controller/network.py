@@ -246,6 +246,12 @@ def get_ignore_ingredients():
 
     return res
 
+#Tells BarBot to fetch and install updates
+@app.route('/update/', strict_slashes=False, methods=['GET'])
+def update():
+    main.update()
+    return 'true'
+
 #Start the REST API
 def start_API():
     app.run(debug=False, host='0.0.0.0')

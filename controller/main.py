@@ -7,7 +7,7 @@ from recipe import upload_recipe, get_recipe, get_all_recipes
 from utils import name_to_upper
 from cocktailStats import increment_cocktail
 import json
-
+import subprocess
 
 #This is the class where BarBot's primary functionality is defined
 class Main():
@@ -803,4 +803,12 @@ class Main():
             print(e)
             return 'error'
         return 'true'
+
+    #Updates to newest software from git
+    def update(self):
+        try:
+            subprocess.Popen('/home/pi/BarBot/update.sh')
+        except Exception as e:
+            print(e)
+
         
