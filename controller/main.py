@@ -406,7 +406,7 @@ class Main():
                 #Determine if pressure pumps should be triggered
                 if(self.pump_data[pump_num]['type'] == 'soda'):
                     percent = float(self.get_bottle_percentage(ingredient))/100
-                    pressure_time = 6*(1-percent) + 1 + self.cocktail_amounts[cocktail_name][i]  #pressure pump time in seconds
+                    pressure_time = self.cocktail_amounts[cocktail_name][i] * self.pump_data[pump_num]['pumpTime']  #pressure pump time in seconds
 
                     pressure_thread = threading.Thread(target=self.pressure_toggle, args=[pump_num, pressure_time])
                     pressure_thread.start()
@@ -711,12 +711,8 @@ class Main():
     #Remove bottle from pumpMap
     def remove_bottle(self, bottle_name, skip_pumps=False):
         pump_num = self.pump_map[bottle_name]['pumpNum']
-        
-        #Skip pumping if not a regular pump
-        if(self.pump_data[pump_num]['type'] != 'regular'):
-            skip_pumps = True
 
-        if(bottle_name in self.pump_map and not self.busy_flag and not skip_pumps):
+        if(bottle_name in self.pump_map and not self.busy_flag and not skip_pumps and self.pump_data[pump_num]['type'] == 'regular'):
             self.busy_flag = True
             
             #Reverse pump polarity
