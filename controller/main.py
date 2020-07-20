@@ -318,11 +318,18 @@ class Main():
                     print("CAN IGNORE INGREDIENT: " + ingredient + '  FOR COCKTAIL: ' + cocktail_name)
             return True
         else:
+            alc_count = 0
             for ingredient in self.cocktail_ingredients[cocktail_name]:
                 if(ingredient in self.alcohol_list):
+                    alc_count += 1
                     if(ingredient not in self.pump_map.keys() and ingredient not in self.ignore_list):
                         print(ingredient + " not available!")
                         return False
+            
+            #Make sure it's not a non-alcoholic drink
+            if(alc_count == 0):
+                return False
+                
             return True
 
     
