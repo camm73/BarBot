@@ -139,6 +139,8 @@ class Main():
             data = json.load(file)
 
         self.cocktail_available = {}
+        self.cocktail_amounts = {}
+        self.cocktail_ingredients = {}
         i = 0
         #Loads all cocktail details into separate python objects
         for cocktails in data['cocktails']:
