@@ -433,7 +433,7 @@ class Main():
             
             wait_time = biggest_time
             print('Wait Time: ' + str(wait_time))
-            time.sleep(wait_time + 2)
+            time.sleep(wait_time)
             self.busy_flag = False
             print("Done making cocktail!")
 

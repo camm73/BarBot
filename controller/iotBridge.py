@@ -78,6 +78,10 @@ class IoTManager():
             self.update_shadow(ret_package)
         elif(action == 'message'):
             print(data)
+        elif(action == 'pumpOn'):
+            self.main.pump_on(int(data))
+        elif(action == 'pumpOff'):
+            self.main.pump_off(int(data))
 
     #Updates BarBot's IoT shadow    
     def update_shadow(self, json_data):
@@ -95,3 +99,7 @@ class IoTManager():
             print("Successfully updated barbot's shadow")
         elif(response_status == 'rejected'):
             print("Shadow update was rejected")
+
+    #Send a message to response MQTT topic
+    def send_response(self, data):
+        self.mqtt_client.publish('barbot-response', json.dumps(data), 0)
