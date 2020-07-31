@@ -252,6 +252,12 @@ def update():
     main.update()
     return 'true'
 
+#Triggers BarBot reset
+@app.route('/reboot/', strict_slashes=False, methods=['GET'])
+def reboot():
+    main.reboot()
+    return 'true'
+
 #Start the REST API
 def start_API():
     app.run(debug=False, host='0.0.0.0')

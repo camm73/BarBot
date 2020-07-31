@@ -820,4 +820,11 @@ class Main():
         except Exception as e:
             print(e)
 
+    #Reboot's BarBot Raspberry Pi
+    def reboot(self):
+        try:
+            subprocess.Popen('/home/pi/BarBot/reboot.sh')
+        except Exception as e:
+            print(e)
+
         
