@@ -36,6 +36,7 @@ then
 	echo "Now installing rmate for remote code editting..."
 
 	sudo wget -O /usr/local/bin/rmate https://raw.githubusercontent.com/aurora/rmate/master/rmate
+	sleep 2
 	sudo chmod a+x /usr/local/bin/rmate
 
 	echo "Done installing rmate"
@@ -51,12 +52,10 @@ sudo systemctl enable barbot.service
 echo "BarBot startup service successfully setup"
 echo "================================================"
 
-echo "Changing default hostname to 'barbot'"
-sudo hostnamectl set-hostname 'barbot'
-echo "Hostname successfully changed"
-echo "================================================"
-
-echo "BarBot setup is complete! BarBot will now reboot itself..."
-sleep 6
-sudo reboot
+echo "BarBot setup is complete! You must now change the hostname from 'raspberrypi' to 'barbot'"
+echo "To do this, navigate to  Netowrk Option -> Hostname  and enter 'barbot'"
+echo "Press 'Ok' to leave the menu when done and then select 'yes' when asked to reboot"
+sudo raspi-config
+sleep 2
+sudo reboot #Just in case user forgets to
 exit 0
