@@ -55,6 +55,8 @@ echo "================================================"
 echo "BarBot setup is complete! You must now change the hostname from 'raspberrypi' to 'barbot'"
 echo "To do this, navigate to  Netowrk Option -> Hostname  and enter 'barbot'"
 echo "Press 'Ok' to leave the menu when done and then select 'yes' when asked to reboot"
+echo "================================================"
+read -n 1 -s -r -p "Press any key to continue..."
 sudo raspi-config
 sleep 2
 sudo reboot #Just in case user forgets to
