@@ -58,6 +58,7 @@ class IoTManager():
             return
         real_message = json.loads(message.payload)
         action = real_message['action']
+        print('Received MQTT message with action: ' + str(action))
         if('data' in real_message):
             data = real_message['data']
 

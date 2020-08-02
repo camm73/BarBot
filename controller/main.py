@@ -399,10 +399,12 @@ class Main():
                 #Skip pumping non-alcohol ingredients
                 if(self.alcohol_mode and ingredient not in self.alcohol_list):
                     print(ingredient + ' is not alcohol. Skipping to next ingredient...')
+                    i += 1
                     continue
 
                 if(ingredient in self.ignore_list):
                     print(ingredient + ' is in ignore list. Skipping to next ingredient...')
+                    i += 1
                     continue
 
                 print('Starting pump for ingredient: ' + ingredient)
@@ -421,14 +423,12 @@ class Main():
                     pressure_thread.start()
 
                 #Adjust volume tracking for each of the pumps
-                print('Ingredient: ' + str(ingredient))
+                print('Ingredient: ' + str(ingredient) + ' --- Amount: ' + str(self.cocktail_amounts[cocktail_name][i]*self.shot_volume) + ' mL')
                 self.adjust_volume_data(ingredient, self.cocktail_amounts[cocktail_name][i])
 
                 #Finds which ingredient has the longest pump time required
                 if(self.cocktail_amounts[cocktail_name][i] * self.pump_data[pump_num]['pumpTime'] > biggest_time):
                     biggest_time = (self.cocktail_amounts[cocktail_name][i]) * self.pump_data[pump_num]['pumpTime']
-                    print('Amount: ' + str(self.cocktail_amounts[cocktail_name][i]))
-                    print('Pump Time: ' + str(self.pump_data[pump_num]['pumpTime']))
                 i += 1
             
             wait_time = biggest_time
@@ -557,7 +557,7 @@ class Main():
     #Adjusts the volume an ingredient after a certain amount is poured
     def adjust_volume_data(self, ingredient_name, shot_amount):
         print('Value: ' + str(self.pump_map[ingredient_name]['volume']))
-        new_val = round(float(self.pump_map[ingredient_name]['volume'])) - (self.shot_volume*shot_amount)
+        new_val = float(self.pump_map[ingredient_name]['volume']) - (self.shot_volume*shot_amount)
         print('New Value: ' + str(new_val))
         self.pump_map[ingredient_name]['volume'] = str(new_val)
         self.write_pump_data()
@@ -581,14 +581,17 @@ class Main():
         for ingredient in self.cocktail_ingredients[name]:
             #Check for alcohol mode
             if(self.alcohol_mode and ingredient not in self.alcohol_list):
+                i += 1
                 continue
             #Check for ignore list
             if(ingredient in self.ignore_list):
+                i += 1
                 continue
 
-            available_amt = round(float(self.pump_map[ingredient]['volume']))
-            need_amt = round(float(self.cocktail_amounts[name][i]))*self.shot_volume
+            available_amt = float(self.pump_map[ingredient]['volume'])
+            need_amt = float(self.cocktail_amounts[name][i])*self.shot_volume
             print('Ingredient: ' + ingredient + '   availableAmt: ' + str(available_amt) + '   needAmt: ' + str(need_amt))
+            i += 1
             if((available_amt - need_amt) < 0):
                 return False
         return True
