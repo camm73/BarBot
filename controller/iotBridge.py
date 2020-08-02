@@ -91,7 +91,6 @@ class IoTManager():
     def update_shadow(self, json_data):
         if(self.disabled):
             return
-        print('UPDATING BARBOT SHADOW')
         self.shadow_handler.shadowUpdate(json.dumps(json_data), self.update_callback, 5)
 
     #Callback function for BarBot's IoT
