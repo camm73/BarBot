@@ -167,13 +167,15 @@ def get_alcohol_mode():
 #Turns on a specific pump number
 @app.route('/pumpOn/<int:num>/', strict_slashes=False, methods=['GET'])
 def pump_on(num):
-    main.pump_on(num)
+    if(not main.busy_flag):
+        main.pump_on(num)
     return "Pump on!\n"
 
 #Turns off a specific pump number
 @app.route('/pumpOff/<int:num>/', strict_slashes=False, methods=['GET'])
 def pump_off(num):
-    main.pump_off(num)
+    if(not main.busy_flag):
+        main.pump_off(num)
     return "Pump off!\n"
 
 #Turns on a particular air pressure pump (number is same as associated solenoid)

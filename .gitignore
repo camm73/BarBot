@@ -1,3 +1,4 @@
 /controller/certs/*
 */__pycache__/
 *.pyc
+/controller/logs/*

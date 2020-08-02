@@ -2,6 +2,11 @@ from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTShadowClient, AWSIoTMQTTClient
 import time
 import json
 from os import path
+import sys
+from datetime import datetime
+
+#sys.stdout = open('./logs/log-' + datetime.now().isoformat() + '.txt', 'w')
+#sys.stderr = open('./logs/error-' + datetime.now().isoformat() + '.txt', 'w')
 
 #Class manages interfacing with AWS IoT Core
 class IoTManager():
@@ -33,7 +38,7 @@ class IoTManager():
 
         try:
             self.mqtt_client.connect()
-            self.mqtt_client.subscribe('barbot-main', 1, self.parse_message)
+            self.mqtt_client.subscribe('barbot-main', 0, self.parse_message)
             print('Connected to AWS IoT Core!')
 
             #Setup Shadow handler
@@ -63,6 +68,7 @@ class IoTManager():
             data = real_message['data']
 
         if(action == 'makeCocktail'):
+            #print('Making cocktail: ' + str(data.lower()))
             self.main.make_cocktail(data.lower())
         elif(action == 'alcoholMode'):
             if(data == True or data == False):
