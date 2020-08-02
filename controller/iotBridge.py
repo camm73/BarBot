@@ -71,8 +71,11 @@ class IoTManager():
         elif(action == 'getMenu'):
             cocktail_array = self.main.get_cocktail_list()
             ret_package = {
-                'action': 'response',
-                'data': cocktail_array
+                'state': {
+                    'desired': {
+                        'menu': cocktail_array
+                    }
+                }
             }
             
             #Update the shadow
@@ -88,6 +91,7 @@ class IoTManager():
     def update_shadow(self, json_data):
         if(self.disabled):
             return
+        print('UPDATING BARBOT SHADOW')
         self.shadow_handler.shadowUpdate(json.dumps(json_data), self.update_callback, 5)
 
     #Callback function for BarBot's IoT
@@ -100,6 +104,7 @@ class IoTManager():
             print("Successfully updated barbot's shadow")
         elif(response_status == 'rejected'):
             print("Shadow update was rejected")
+            print(payload)
 
     #Send a message to response MQTT topic
     def send_response(self, data):
