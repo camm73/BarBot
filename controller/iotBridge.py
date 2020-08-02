@@ -15,6 +15,7 @@ class IoTManager():
 
         if not path.exists('./certs/iotDetails.json'):
             self.disabled = True
+            print('IoT files don\'t exist')
             return
         
         #Load AWS IoT Core details from json file

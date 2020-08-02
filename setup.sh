@@ -51,6 +51,10 @@ sleep 1
 sudo systemctl enable barbot.service
 echo "BarBot startup service successfully setup"
 echo "================================================"
+echo "Creating certs directory"
+mkdir ./controller/certs
+echo "Done creating certs directory"
+echo "================================================"
 
 echo "BarBot setup is complete! You must now change the hostname from 'raspberrypi' to 'barbot'"
 echo "To do this, navigate to  Netowrk Option -> Hostname  and enter 'barbot'"
