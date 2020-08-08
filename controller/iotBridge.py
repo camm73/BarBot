@@ -5,9 +5,6 @@ from os import path
 import sys
 from datetime import datetime
 
-#sys.stdout = open('./logs/log-' + datetime.now().isoformat() + '.txt', 'w')
-#sys.stderr = open('./logs/error-' + datetime.now().isoformat() + '.txt', 'w')
-
 #Class manages interfacing with AWS IoT Core
 class IoTManager():
 
@@ -29,22 +26,22 @@ class IoTManager():
 
         self.mqtt_client = AWSIoTMQTTClient('barbot')
         self.mqtt_client.configureEndpoint(self.iot_details['endpoint'], 8883)
-        self.mqtt_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot.private.key', './certs/BarBot.cert.pem')
+        self.mqtt_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot-private.pem.key', './certs/BarBot-certificate.pem.crt')
 
-        self.mqtt_client.configureOfflinePublishQueueing(0)
+        self.mqtt_client.configureOfflinePublishQueueing(-1)
         self.mqtt_client.configureDrainingFrequency(2)
         self.mqtt_client.configureConnectDisconnectTimeout(15)
         self.mqtt_client.configureMQTTOperationTimeout(5)
 
         try:
             self.mqtt_client.connect()
-            self.mqtt_client.subscribe('barbot-main', 0, self.parse_message)
+            self.mqtt_client.subscribe('barbot-main', 1, self.parse_message)
             print('Connected to AWS IoT Core!')
 
             #Setup Shadow handler
             self.shadow_client = AWSIoTMQTTShadowClient('barbot-shadow')
             self.shadow_client.configureEndpoint(self.iot_details['endpoint'], 8883)
-            self.shadow_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot.private.key', './certs/BarBot.cert.pem')
+            self.shadow_client.configureCredentials('./certs/root-CA.crt', './certs/BarBot-private.pem.key', './certs/BarBot-certificate.pem.crt')
             self.shadow_client.configureAutoReconnectBackoffTime(1, 32, 20)
             self.shadow_client.configureConnectDisconnectTimeout(10)
             self.shadow_client.configureMQTTOperationTimeout(5)
@@ -59,6 +56,7 @@ class IoTManager():
 
     #Parses incoming message from MQTT topic and routes to proper function
     def parse_message(self, client, userdata, message):
+        print('PARSE MESSAGE')
         if(self.disabled):
             return
         real_message = json.loads(message.payload)
@@ -70,6 +68,10 @@ class IoTManager():
         if(action == 'makeCocktail'):
             #print('Making cocktail: ' + str(data.lower()))
             self.main.make_cocktail(data.lower())
+            try:
+                self.mqtt_client.publish('barbot-res', 'Made cocktail: ' + data.lower(), 0)
+            except Exception as e:
+                print(e)
         elif(action == 'alcoholMode'):
             if(data == True or data == False):
                 self.main.set_alcohol_mode(data)

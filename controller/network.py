@@ -9,6 +9,10 @@ import subprocess
 import requests
 import traceback
 import RPi.GPIO as GPIO
+import sys
+
+#sys.stdout = open('./logs/out.txt', 'w')
+#sys.stderr = open('./logs/err.txt', 'w')
 
 app = FlaskAPI(__name__) #Create REST API object
 main = Main() #Starts the primary initalization of BarBot
