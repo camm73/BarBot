@@ -35,7 +35,7 @@ class IoTManager():
 
         try:
             self.mqtt_client.connect()
-            self.mqtt_client.subscribe('barbot-main', 1, self.parse_message)
+            self.mqtt_client.subscribe('barbot-main', 0, self.parse_message)
             print('Connected to AWS IoT Core!')
 
             #Setup Shadow handler
@@ -59,42 +59,42 @@ class IoTManager():
         print('PARSE MESSAGE')
         if(self.disabled):
             return
-        real_message = json.loads(message.payload)
-        action = real_message['action']
-        print('Received MQTT message with action: ' + str(action))
-        if('data' in real_message):
-            data = real_message['data']
+        
+        try:
+            real_message = json.loads(message.payload)
+            action = real_message['action']
+            print('Received MQTT message with action: ' + str(action))
+            if('data' in real_message):
+                data = real_message['data']
 
-        if(action == 'makeCocktail'):
-            #print('Making cocktail: ' + str(data.lower()))
-            self.main.make_cocktail(data.lower())
-            try:
-                self.mqtt_client.publish('barbot-res', 'Made cocktail: ' + data.lower(), 0)
-            except Exception as e:
-                print(e)
-        elif(action == 'alcoholMode'):
-            if(data == True or data == False):
-                self.main.set_alcohol_mode(data)
-            else:
-                print('Not a valid alcoholMode setting!')
-        elif(action == 'getMenu'):
-            cocktail_array = self.main.get_cocktail_list()
-            ret_package = {
-                'state': {
-                    'desired': {
-                        'menu': cocktail_array
+            if(action == 'makeCocktail'):
+                #print('Making cocktail: ' + str(data.lower()))
+                self.main.make_cocktail(data.lower())
+            elif(action == 'alcoholMode'):
+                if(data == True or data == False):
+                    self.main.set_alcohol_mode(data)
+                else:
+                    print('Not a valid alcoholMode setting!')
+            elif(action == 'getMenu'):
+                cocktail_array = self.main.get_cocktail_list()
+                ret_package = {
+                    'state': {
+                        'desired': {
+                            'menu': cocktail_array
+                        }
                     }
                 }
-            }
-            
-            #Update the shadow
-            self.update_shadow(ret_package)
-        elif(action == 'message'):
-            print(data)
-        elif(action == 'pumpOn'):
-            self.main.pump_on(int(data))
-        elif(action == 'pumpOff'):
-            self.main.pump_off(int(data))
+                
+                #Update the shadow
+                self.update_shadow(ret_package)
+            elif(action == 'message'):
+                print(data)
+            elif(action == 'pumpOn'):
+                self.main.pump_on(int(data))
+            elif(action == 'pumpOff'):
+                self.main.pump_off(int(data))
+        except Exception as e:
+            print(e)
 
     #Updates BarBot's IoT shadow    
     def update_shadow(self, json_data):
