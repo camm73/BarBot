@@ -8,13 +8,20 @@ function createWindow () {
     protocol: 'file:',
     slashes: true,
   });
-  mainWindow = new BrowserWindow({ width: 1024, height: 600 });
+  mainWindow = new BrowserWindow({
+        width: 1024,
+        height: 600,
+        webPreferences: {
+            webSecurity: false,
+        }
+    });
   mainWindow.loadURL(startUrl);
   mainWindow.on('closed', function () {
     mainWindow = null;
   });
 }
 
+app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 app.on('ready', createWindow);
 
 app.on('window-all-closed', function () {

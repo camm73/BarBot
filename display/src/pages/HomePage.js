@@ -1,4 +1,5 @@
 import React from 'react';
+import { getCocktailMenu } from '../api/Control';
 import './HomePage.css';
 
 class HomePage extends React.Component{
@@ -6,6 +7,16 @@ class HomePage extends React.Component{
     state = {
         cocktailList: [],
     };
+
+    componentDidMount(){
+        getCocktailMenu().then(res => {
+            this.setState({
+                cocktailList: res,
+            });
+        }).catch((err) => {
+            console.log(err);
+        });
+    }
 
     render(){
         return(
