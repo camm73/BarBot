@@ -462,7 +462,7 @@ export async function getCocktailMenu() {
     })
       .then(response => response.json())
       .then(responseJson => {
-        console.log(responseJson);
+        //console.log(responseJson);
         resolve(responseJson);
       })
       .catch(error => {
