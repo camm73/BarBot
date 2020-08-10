@@ -24,6 +24,14 @@
 
 .NotAvailable {
     font-size: 28px;
-    padding-top: 10rem;
     text-align: center;
+}
+
+.NotAvailableContainer {
+    margin-top: 8rem;
+    padding: 30px;
+    margin-left: 12rem;
+    margin-right: 12rem;
+    border-radius: 20px;
+    background: gray;
 }
