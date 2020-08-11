@@ -2,11 +2,10 @@ const barbotAddress = 'http://barbot.local:5000/';
 const shotSize = 1.5; //fl oz
 
 //Calls the make cocktail function on BarBot API
-export async function makeCocktail(name, abortSignal) {
+export async function makeCocktail(name) {
   return new Promise(function(resolve, reject) {
     fetch(barbotAddress + 'cocktail/' + encodeURI(name.toLowerCase()) + '/', {
       method: 'GET',
-      signal: abortSignal,
     })
       .then(response => response.text())
       .then(responseText => {
