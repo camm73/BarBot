@@ -47,12 +47,15 @@ export default MenuItem;
 
 const styles = {
     containerStyle: {
-        minWidth: '15rem',
+        display: 'table',
+        minWidth: '15.5rem',
         margin: '15px',
         textAlign: 'center',
         borderRadius: '12px',
         background: '#3E525C',
-        color: 'white'
+        color: 'white',
+        maxHeight: '25rem',
+        minHeight: '25rem',
     },
 
     titleStyle: {
@@ -64,6 +67,9 @@ const styles = {
         borderRadius: '20px',
         width: '175px',
         backgroundColor: '#7295A6',
-        borderWidth: '0px'
+        borderWidth: '0px',
+        position: 'absolute',
+        bottom: '12px',
+        left: '15%',
     }
 };
