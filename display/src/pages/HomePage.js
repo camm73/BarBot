@@ -1,4 +1,7 @@
 import React from 'react';
+import Button from 'react-bootstrap/Button';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faArrowLeft, faArrowRight} from '@fortawesome/free-solid-svg-icons';
 import { getCocktailMenu } from '../api/Control';
 import MenuItem from '../components/MenuItem';
 import './HomePage.css';
@@ -12,7 +15,7 @@ class HomePage extends React.Component{
 
     state = {
         cocktailList: [],
-
+        cocktailLimit: 3,
     };
 
     componentDidMount(){
@@ -48,9 +51,29 @@ class HomePage extends React.Component{
                     </div>
                 )}
                 <div className='CardContainer'>
-                    {this.state.cocktailList.length > 0 && this.state.cocktailList.map((name, index) => (
+                    <div style={{...styles.buttonStyle, marginRight: '10px'}}>
+                        <FontAwesomeIcon icon={faArrowLeft} size='4x' onClick={() => {
+                            //TODO: Add mechanism to change pages
+                            if(this.state.cocktailLimit > 3){
+                                this.setState({
+                                    cocktailLimit: this.state.cocktailLimit - 3,
+                                });
+                            }
+                        }}/>
+                    </div>
+                    {this.state.cocktailList.length > 0 && this.state.cocktailList.map((name, index) => (index >= this.state.cocktailLimit-3 && index < this.state.cocktailLimit) ? (
                         <MenuItem name={name} key={name}/>
-                    ))}
+                    ) : (<></>))}
+                    <div style={{...styles.buttonStyle, marginLeft: '10px'}}>
+                        <FontAwesomeIcon icon={faArrowRight} size='4x' onClick={() => {
+                            //TODO: Add ability to go to next page
+                            if(this.state.cocktailLimit < this.state.cocktailList.length){
+                                this.setState({
+                                    cocktailLimit: this.state.cocktailLimit + 3,
+                                });
+                            }
+                        }}/>
+                    </div>
                 </div>
             </div>
         );
@@ -58,3 +81,11 @@ class HomePage extends React.Component{
 }
 
 export default HomePage;
+
+const styles = {
+    buttonStyle: {
+        maxHeight: '60px',
+        justifyContent: 'center',
+        alignSelf: 'center',
+    },
+};

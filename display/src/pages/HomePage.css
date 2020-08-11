@@ -34,13 +34,10 @@
     margin-right: 12rem;
     border-radius: 20px;
     background: gray;
-    overflow: hidden;
 }
 
 .CardContainer {
-    position: absolute;
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
-    overflow-x: scroll;
+    justify-content: center;
 }
