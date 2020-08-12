@@ -5,6 +5,8 @@ import { getCocktailMenu } from '../api/Control';
 import MenuItem from '../components/MenuItem';
 import './HomePage.css';
 
+const cocktailsPerPage = 4;
+
 class HomePage extends React.Component{
     constructor(props){
         super(props);
@@ -14,7 +16,7 @@ class HomePage extends React.Component{
 
     state = {
         cocktailList: [],
-        cocktailLimit: 3,
+        cocktailLimit: cocktailsPerPage,
     };
 
     componentDidMount(){
@@ -50,25 +52,25 @@ class HomePage extends React.Component{
                     </div>
                 )}
                 <div className='CardContainer'>
-                    <div style={{...styles.buttonStyle, marginRight: '10px'}}>
-                        <FontAwesomeIcon icon={faArrowLeft} size='4x' onClick={() => {
+                    <div style={{...styles.buttonStyle}}>
+                        <FontAwesomeIcon icon={faArrowLeft} size='5x' onClick={() => {
                             //TODO: Add mechanism to change pages
                             if(this.state.cocktailLimit > 3){
                                 this.setState({
-                                    cocktailLimit: this.state.cocktailLimit - 3,
+                                    cocktailLimit: this.state.cocktailLimit - cocktailsPerPage,
                                 });
                             }
                         }}/>
                     </div>
-                    {this.state.cocktailList.length > 0 && this.state.cocktailList.map((name, index) => (index >= this.state.cocktailLimit-3 && index < this.state.cocktailLimit) ? (
+                    {this.state.cocktailList.length > 0 && this.state.cocktailList.map((name, index) => (index >= (this.state.cocktailLimit - cocktailsPerPage) && index < this.state.cocktailLimit) ? (
                         <MenuItem name={name} key={name}/>
                     ) : (<></>))}
-                    <div style={{...styles.buttonStyle, marginLeft: '10px'}}>
-                        <FontAwesomeIcon icon={faArrowRight} size='4x' onClick={() => {
+                    <div style={{...styles.buttonStyle}}>
+                        <FontAwesomeIcon icon={faArrowRight} size='5x' onClick={() => {
                             //TODO: Add ability to go to next page
                             if(this.state.cocktailLimit < this.state.cocktailList.length){
                                 this.setState({
-                                    cocktailLimit: this.state.cocktailLimit + 3,
+                                    cocktailLimit: this.state.cocktailLimit + cocktailsPerPage,
                                 });
                             }
                         }}/>

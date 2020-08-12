@@ -5,12 +5,15 @@ import {toUpper} from '../utils/Tools';
 import {getIngredients} from '../api/Cloud';
 import {makeCocktail} from '../api/Control';
 import LoadingComponent from '../components/LoadingComponent';
+import ConfirmationComponent from '../components/ConfirmationComponent';
 
 class MenuItem extends React.Component {
 
     state = {
         ingredients: {},
         loading: false,
+        confirmVisible: false,
+        confirmText: '',
     };
 
     componentDidMount(){
@@ -27,10 +30,46 @@ class MenuItem extends React.Component {
         }
     }
 
+    processCocktail(){
+        this.setState({
+            loading: true,
+        });
+        makeCocktail(this.props.name).then((res) => {
+            this.setState({
+                loading: false,
+            }, () => {
+                if(res === false){
+                    alert('There was an error making your cocktail!');
+                }
+            });
+        }).catch(err => {
+            console.log(err);
+            this.setState({
+                loading: false,
+            }, () => {
+                alert('There was an error making your cocktail!');
+            });
+        })
+    }
+
+    confirmCallback(confirm) {
+        if(confirm){
+            this.setState({
+                confirmVisible: false,
+            });
+            this.processCocktail();
+        }else{
+            this.setState({
+                confirmVisible: false,
+            });
+        }
+    }
+
     render(){
         return(
             <div>
                 <LoadingComponent titleText='Making Cocktail' bodyText='Please wait while BarBot makes your cocktail...' visible={this.state.loading}/>
+                <ConfirmationComponent titleText='Make Cocktail?' bodyText={this.state.confirmText} visible={this.state.confirmVisible} confirmCallback={this.confirmCallback.bind(this)}/>
                 <Card style={styles.containerStyle}>
                     <Card.Img variant='top' src={require('../assets/defaultCocktail.jpg')} style={{width: '140px', height: '140px', alignSelf: 'center', borderRadius: '8px', marginTop: '10px'}}/>
                     <Card.Body>
@@ -38,23 +77,15 @@ class MenuItem extends React.Component {
                         <div>
                             {Object.keys(this.state.ingredients).length > 0 && Object.keys(this.state.ingredients).map((name, index) => (
                                 <div key={name} style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', marginBottom: '-10px'}}>
-                                    <p style={{marginRight: '8px'}}>{toUpper(name)}</p>
-                                    <p>{this.state.ingredients[name]*1.5 + ' fl oz'}</p>
+                                    <p style={{marginRight: '8px', fontSize: '19px'}}>{toUpper(name)}</p>
+                                    <p style={{fontSize: '19px'}}>{this.state.ingredients[name]*1.5 + ' fl oz'}</p>
                                 </div>
                             ))}
                         </div>
                         <Button style={styles.buttonStyle} onClick={() => {
                             this.setState({
-                                loading: true,
-                            });
-                            makeCocktail(this.props.name).then((res) => {
-                                this.setState({
-                                    loading: false,
-                                }, () => {
-                                    if(res === false){
-                                        alert('There was an error making your cocktail!');
-                                    }
-                                });
+                                confirmText: 'Place your cup underneath BarBot. Press "Continue" when you\'re ready to make your ' + toUpper(this.props.name) + '.',
+                                confirmVisible: true,
                             });
                         }}>Make Cocktail</Button>
                     </Card.Body>
@@ -69,28 +100,31 @@ export default MenuItem;
 const styles = {
     containerStyle: {
         display: 'table',
-        minWidth: '15.5rem',
+        minWidth: '17rem',
         margin: '15px',
         textAlign: 'center',
         borderRadius: '12px',
         background: '#3E525C',
         color: 'white',
-        maxHeight: '25rem',
-        minHeight: '25rem',
+        maxHeight: '32rem',
+        minHeight: '32rem',
     },
 
     titleStyle: {
         textDecorationLine: 'underline',
         marginBottom: '2px',
+        fontSize: '22px'
     },
 
     buttonStyle: {
-        borderRadius: '20px',
-        width: '175px',
+        borderRadius: '25px',
+        width: '200px',
+        height: '50px',
         backgroundColor: '#7295A6',
         borderWidth: '0px',
         position: 'absolute',
         bottom: '12px',
-        left: '15%',
+        fontSize: '20px',
+        left: '14%',
     },
 };
