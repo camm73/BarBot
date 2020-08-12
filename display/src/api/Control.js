@@ -1,4 +1,5 @@
-const barbotAddress = 'http://barbot.local:5000/';
+//const barbotAddress = 'http://barbot.local:5000/';
+const barbotAddress = 'http://barbot:5000/';
 const shotSize = 1.5; //fl oz
 
 //Calls the make cocktail function on BarBot API
