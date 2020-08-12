@@ -1,5 +1,8 @@
+const settings = require('../config/settings.json');
+
 //const barbotAddress = 'http://barbot.local:5000/';
-const barbotAddress = 'http://barbot:5000/';
+//const barbotAddress = 'http://barbot:5000/';
+const barbotAddress = settings.barbotAddress;
 const shotSize = 1.5; //fl oz
 
 //Calls the make cocktail function on BarBot API

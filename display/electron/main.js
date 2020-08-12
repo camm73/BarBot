@@ -9,8 +9,8 @@ function createWindow () {
     slashes: true,
   });
   mainWindow = new BrowserWindow({
-        width: 1024,
-        height: 600,
+        width: 1366,
+        height: 768,
         webPreferences: {
             webSecurity: false,
         }
