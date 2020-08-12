@@ -1,0 +1,43 @@
+.HomePage {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    background: #617E8C;
+}
+
+.HeaderText {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 48px;
+    text-align: center;
+}
+
+.MenuContainer {
+    position: fixed;
+    left: 30px;
+    right: 20px;
+    height: 80px;
+    background: gray;
+}
+
+.NotAvailable {
+    font-size: 28px;
+    text-align: center;
+}
+
+.NotAvailableContainer {
+    margin-top: 8rem;
+    padding: 30px;
+    margin-left: 12rem;
+    margin-right: 12rem;
+    border-radius: 20px;
+    background: gray;
+}
+
+.CardContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
