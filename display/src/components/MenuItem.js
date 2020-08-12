@@ -2,7 +2,7 @@ import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import {toUpper} from '../utils/Tools';
-import {getIngredients} from '../api/Cloud';
+import {getIngredients, verifyImageExists, getThumbnail} from '../api/Cloud';
 import {makeCocktail} from '../api/Control';
 import LoadingComponent from '../components/LoadingComponent';
 import ConfirmationComponent from '../components/ConfirmationComponent';
@@ -14,10 +14,29 @@ class MenuItem extends React.Component {
         loading: false,
         confirmVisible: false,
         confirmText: '',
+        thumbnailLink: undefined,
+        imageExists: false,
     };
 
     componentDidMount(){
         this.loadIngredients();
+        verifyImageExists(this.props.name, this.setImageExists.bind(this));
+    }
+
+    setImageExists(status){
+        //Load thumbnail
+        if (status === true) {
+            console.log('Found image for: ' + this.props.name);
+            var link = getThumbnail(this.props.name);
+            this.setState({
+                thumbnailLink: link,
+                imageExists: true,
+            });
+        } else {
+            this.setState({
+                imageExists: status,
+            });
+        }
     }
 
     loadIngredients(){
@@ -71,7 +90,7 @@ class MenuItem extends React.Component {
                 <LoadingComponent titleText='Making Cocktail' bodyText='Please wait while BarBot makes your cocktail...' visible={this.state.loading}/>
                 <ConfirmationComponent titleText='Make Cocktail?' bodyText={this.state.confirmText} visible={this.state.confirmVisible} confirmCallback={this.confirmCallback.bind(this)}/>
                 <Card style={styles.containerStyle}>
-                    <Card.Img variant='top' src={require('../assets/defaultCocktail.jpg')} style={{width: '140px', height: '140px', alignSelf: 'center', borderRadius: '8px', marginTop: '10px'}}/>
+                    <Card.Img variant='top' src={this.state.imageExists ? this.state.thumbnailLink : require('../assets/defaultCocktail.jpg')} style={{width: '150px', height: '150px', alignSelf: 'center', borderRadius: '10px', marginTop: '10px'}}/>
                     <Card.Body>
                         <Card.Title style={styles.titleStyle}>{toUpper(this.props.name)}</Card.Title>
                         <div>
@@ -106,8 +125,8 @@ const styles = {
         borderRadius: '12px',
         background: '#3E525C',
         color: 'white',
-        maxHeight: '32rem',
-        minHeight: '32rem',
+        maxHeight: '33rem',
+        minHeight: '33rem',
     },
 
     titleStyle: {

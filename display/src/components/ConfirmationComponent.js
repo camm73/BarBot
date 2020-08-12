@@ -15,15 +15,15 @@ class ConfirmationComponent extends React.Component {
                     <Modal.Title id="contained-modal-title-vcenter">{this.props.titleText}</Modal.Title>   
                 </Modal.Header>
                 <Modal.Body>
-                    <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center'}}>
+                    <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center', fontSize: '20px'}}>
                         <p>{this.props.bodyText}</p>
                     </div>
                 </Modal.Body>
                 <Modal.Footer style={{justifyContent: 'space-between'}}>
-                    <Button variant='secondary' onClick={() => {
+                    <Button variant='secondary' size='lg' onClick={() => {
                         this.props.confirmCallback(false);
                     }}>Go Back</Button>
-                    <Button variant='primary' onClick={() => {
+                    <Button variant='primary' size='lg' onClick={() => {
                         this.props.confirmCallback(true);
                     }}>Continue</Button>
                 </Modal.Footer>
@@ -33,3 +33,6 @@ class ConfirmationComponent extends React.Component {
 }
 
 export default ConfirmationComponent;
+
+const styles = {
+};

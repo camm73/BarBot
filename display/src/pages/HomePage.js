@@ -55,7 +55,7 @@ class HomePage extends React.Component{
                     <div style={{...styles.buttonStyle}}>
                         <FontAwesomeIcon icon={faArrowLeft} size='5x' onClick={() => {
                             //TODO: Add mechanism to change pages
-                            if(this.state.cocktailLimit > 3){
+                            if(this.state.cocktailLimit > cocktailsPerPage){
                                 this.setState({
                                     cocktailLimit: this.state.cocktailLimit - cocktailsPerPage,
                                 });
