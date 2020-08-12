@@ -3,7 +3,7 @@ import time
 import json
 from os import path
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 #Class manages interfacing with AWS IoT Core
 class IoTManager():
@@ -66,6 +66,13 @@ class IoTManager():
             print('Received MQTT message with action: ' + str(action))
             if('data' in real_message):
                 data = real_message['data']
+
+            time_recv = real_message['time']
+            time_delay = int(datetime.utcnow().replace(tzinfo=timezone.utc).timestamp()) - time_recv
+
+            if(time_delay > 5):
+                print('Message took too long to receive')
+                return
 
             if(action == 'makeCocktail'):
                 #print('Making cocktail: ' + str(data.lower()))
