@@ -9,6 +9,8 @@ import './App.css';
 import HomePage from './pages/HomePage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+console.log('INSIDE APP!');
+
 function App() {
   return (
     <Router>
