@@ -17,7 +17,7 @@ class LoadingComponent extends React.Component{
                 <Modal.Body>
                     <div style={{display: 'flex', flexDirection: 'column', textAlign: 'center'}}>
                         <Spinner animation='border' style={{alignSelf: 'center', marginBottom: '10px'}}/>
-                        <p>{this.props.bodyText}</p>
+                        <p style={{fontSize: '20px'}}>{this.props.bodyText}</p>
                     </div>
                 </Modal.Body>
             </Modal>

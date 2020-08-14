@@ -5,6 +5,8 @@ const settings = require('../config/settings.json');
 const barbotAddress = settings.barbotAddress;
 const shotSize = 1.5; //fl oz
 
+console.log('Using Address: ' + barbotAddress);
+
 //Calls the make cocktail function on BarBot API
 export async function makeCocktail(name) {
   return new Promise(function(resolve, reject) {

@@ -52,7 +52,7 @@ class HomePage extends React.Component{
                     </div>
                 )}
                 <div className='CardContainer'>
-                    <div style={{...styles.buttonStyle}}>
+                    {this.state.cocktailList.length > 0 && (<div style={{...styles.buttonStyle}}>
                         <FontAwesomeIcon icon={faArrowLeft} size='5x' onClick={() => {
                             //TODO: Add mechanism to change pages
                             if(this.state.cocktailLimit > cocktailsPerPage){
@@ -61,11 +61,11 @@ class HomePage extends React.Component{
                                 });
                             }
                         }}/>
-                    </div>
+                    </div>)}
                     {this.state.cocktailList.length > 0 && this.state.cocktailList.map((name, index) => (index >= (this.state.cocktailLimit - cocktailsPerPage) && index < this.state.cocktailLimit) ? (
                         <MenuItem name={name} key={name}/>
                     ) : (<></>))}
-                    <div style={{...styles.buttonStyle}}>
+                    {this.state.cocktailList.length > 0 && (<div style={{...styles.buttonStyle}}>
                         <FontAwesomeIcon icon={faArrowRight} size='5x' onClick={() => {
                             //TODO: Add ability to go to next page
                             if(this.state.cocktailLimit < this.state.cocktailList.length){
@@ -74,7 +74,7 @@ class HomePage extends React.Component{
                                 });
                             }
                         }}/>
-                    </div>
+                    </div>)}
                 </div>
             </div>
         );
