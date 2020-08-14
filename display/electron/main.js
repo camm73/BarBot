@@ -8,6 +8,8 @@ function createWindow () {
     protocol: 'file:',
     slashes: true,
   });
+
+  console.log("START URL: " + startUrl);
   mainWindow = new BrowserWindow({
         width: 1366,
         height: 768,
