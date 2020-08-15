@@ -17,7 +17,7 @@ fi
 echo "================================================"
 echo "Installing necessary python packages for BarBot..."
 
-/usr/bin/python3 -m pip install flask Flask-API boto3 AWSIoTPythonSDK RPi.GPIO awscli
+/usr/bin/python3 -m pip install flask Flask-API schedule boto3 AWSIoTPythonSDK RPi.GPIO awscli
 
 export PATH=/home/pi/.local/bin:$PATH
 echo "Done installing python packages."

@@ -4,6 +4,8 @@ import json
 from os import path
 import sys
 from datetime import datetime, timezone
+import schedule
+import threading
 
 #Class manages interfacing with AWS IoT Core
 class IoTManager():
@@ -14,6 +16,11 @@ class IoTManager():
         self.iot_details = {}
         self.thing_name = 'BarBot'
         self.disabled = False #TODO: load this from the settings file
+
+        schedule.every(30).seconds.do(self.ping)
+
+        alive_thread = threading.Thread(target=self.keep_alive, daemon=True)
+        alive_thread.start()
 
         if not path.exists('./certs/iotDetails.json'):
             self.disabled = True
@@ -123,4 +130,16 @@ class IoTManager():
 
     #Send a message to response MQTT topic
     def send_response(self, data):
-        self.mqtt_client.publish('barbot-response', json.dumps(data), 0)
+        self.mqtt_client.publish('barbot-res', json.dumps(data), 0)
+        print('Sending ping')
+
+    def ping(self):
+        data = {
+            "action": "ping"
+        }
+        self.send_response(data)
+
+    def keep_alive(self):
+        while(True):
+            schedule.run_pending()
+            time.sleep(15)
