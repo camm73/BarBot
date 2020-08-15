@@ -15,7 +15,8 @@ function createWindow () {
         height: 768,
         webPreferences: {
             webSecurity: false,
-        }
+        },
+        kiosk: true,
     });
   mainWindow.loadURL(startUrl);
   mainWindow.on('closed', function () {
