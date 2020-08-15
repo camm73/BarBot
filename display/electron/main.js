@@ -16,7 +16,7 @@ function createWindow () {
         webPreferences: {
             webSecurity: false,
         },
-        kiosk: true,
+        kiosk: false,
     });
   mainWindow.loadURL(startUrl);
   mainWindow.on('closed', function () {

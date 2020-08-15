@@ -5,7 +5,7 @@ import { getCocktailMenu } from '../api/Control';
 import MenuItem from '../components/MenuItem';
 import './HomePage.css';
 
-const cocktailsPerPage = 4;
+const cocktailsPerPage = 3;
 
 class HomePage extends React.Component{
     constructor(props){
@@ -22,7 +22,7 @@ class HomePage extends React.Component{
     componentDidMount(){
         this.loadCocktailMenu();
         
-        this.loadMenuInterval = setInterval(this.loadCocktailMenu.bind(this), 30000);
+        this.loadMenuInterval = setInterval(this.loadCocktailMenu.bind(this), 10000);
     }
 
     componentWillUnmount(){

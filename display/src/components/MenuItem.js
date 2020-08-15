@@ -56,17 +56,11 @@ class MenuItem extends React.Component {
         makeCocktail(this.props.name).then((res) => {
             this.setState({
                 loading: false,
-            }, () => {
-                if(res === false){
-                    alert('There was an error making your cocktail!');
-                }
             });
         }).catch(err => {
             console.log(err);
             this.setState({
                 loading: false,
-            }, () => {
-                alert('There was an error making your cocktail!');
             });
         })
     }
@@ -90,14 +84,14 @@ class MenuItem extends React.Component {
                 <LoadingComponent titleText='Making Cocktail' bodyText='Please wait while BarBot makes your cocktail...' visible={this.state.loading}/>
                 <ConfirmationComponent titleText='Make Cocktail?' bodyText={this.state.confirmText} visible={this.state.confirmVisible} confirmCallback={this.confirmCallback.bind(this)}/>
                 <Card style={styles.containerStyle}>
-                    <Card.Img variant='top' src={this.state.imageExists ? this.state.thumbnailLink : require('../assets/defaultCocktail.jpg')} style={{width: '150px', height: '150px', alignSelf: 'center', borderRadius: '10px', marginTop: '10px'}}/>
+                    <Card.Img variant='top' src={this.state.imageExists ? this.state.thumbnailLink : require('../assets/defaultCocktail.jpg')} style={{width: '170px', height: '170px', alignSelf: 'center', borderRadius: '10px', marginTop: '10px'}}/>
                     <Card.Body>
                         <Card.Title style={styles.titleStyle}>{toUpper(this.props.name)}</Card.Title>
                         <div>
                             {Object.keys(this.state.ingredients).length > 0 && Object.keys(this.state.ingredients).map((name, index) => (
                                 <div key={name} style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', marginBottom: '-10px'}}>
-                                    <p style={{marginRight: '8px', fontSize: '19px'}}>{toUpper(name)}</p>
-                                    <p style={{fontSize: '19px'}}>{this.state.ingredients[name]*1.5 + ' fl oz'}</p>
+                                    <p style={{marginRight: '8px', fontSize: '22px'}}>{toUpper(name)}</p>
+                                    <p style={{fontSize: '22px'}}>{this.state.ingredients[name]*1.5 + ' fl oz'}</p>
                                 </div>
                             ))}
                         </div>
@@ -119,31 +113,31 @@ export default MenuItem;
 const styles = {
     containerStyle: {
         display: 'table',
-        minWidth: '17rem',
+        minWidth: '21rem',
         margin: '15px',
         textAlign: 'center',
         borderRadius: '12px',
         background: '#3E525C',
         color: 'white',
-        maxHeight: '33rem',
-        minHeight: '33rem',
+        maxHeight: '38rem',
+        minHeight: '38rem',
     },
 
     titleStyle: {
         textDecorationLine: 'underline',
         marginBottom: '2px',
-        fontSize: '22px'
+        fontSize: '26px'
     },
 
     buttonStyle: {
-        borderRadius: '25px',
-        width: '200px',
-        height: '50px',
+        borderRadius: '30px',
+        width: '250px',
+        height: '60px',
         backgroundColor: '#7295A6',
         borderWidth: '0px',
         position: 'absolute',
-        bottom: '12px',
-        fontSize: '20px',
-        left: '14%',
+        bottom: '15px',
+        fontSize: '24px',
+        left: '13%',
     },
 };

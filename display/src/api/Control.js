@@ -18,12 +18,16 @@ export async function makeCocktail(name) {
         //console.log('Cocktail Response: ' + responseText);
         if (responseText === 'available') {
           resolve(false);
+          alert('Sorry! This cocktail is not currently available.');
         } else if (responseText === 'busy') {
           resolve(false);
+          alert('BarBot is busy right now. Try again soon!');
         } else if (responseText === 'ingredients') {
           resolve(false);
+          alert('BarBot does not have enough ingredients to make this cocktail. Sorry!');
         } else if (responseText === 'error') {
           resolve(false);
+          alert('An error occurred trying to make your cocktail!');
         } else {
           resolve(true);
         }
