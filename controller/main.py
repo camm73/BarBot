@@ -417,7 +417,7 @@ class Main():
                 #Determine if pressure pumps should be triggered
                 if(self.pump_data[pump_num]['type'] == 'soda'):
                     percent = float(self.get_bottle_percentage(ingredient))/100
-                    pressure_time = self.cocktail_amounts[cocktail_name][i] * self.pump_data[pump_num]['pumpTime']  #pressure pump time in seconds
+                    pressure_time = self.cocktail_amounts[cocktail_name][i] * self.pump_data[pump_num]['pumpTime'] * 0.75  #pressure pump time in seconds
 
                     pressure_thread = threading.Thread(target=self.pressure_toggle, args=[pump_num, pressure_time])
                     pressure_thread.start()
