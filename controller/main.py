@@ -73,8 +73,8 @@ class Main():
                 GPIO.output(self.pressure_pins[pump], GPIO.HIGH)
 
             #Setup abort pins
-            GPIO.setup(self.abort_pins[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            GPIO.add_event_detect(self.abort_pins[0], GPIO.RISING, callback=self.abort_pumps, bouncetime=200)
+            #GPIO.setup(self.abort_pins[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            #GPIO.add_event_detect(self.abort_pins[0], GPIO.RISING, callback=self.abort_pumps, bouncetime=200)
 
             print("Pins successfully setup!")
         except Exception as e:
