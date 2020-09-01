@@ -8,6 +8,7 @@ from utils import name_to_upper
 from cocktailStats import increment_cocktail
 import json
 import subprocess
+from datetime import datetime
 
 #This is the class where BarBot's primary functionality is defined
 class Main():
@@ -30,9 +31,12 @@ class Main():
         self.pump_data = {}
         self.cocktail_count = 0
         self.clean_time = 8  #Regular Time: 12 seconds
-        self.shot_volume = 44 #mL
+        self.shot_volume = 44.36 #mL
         self.busy_flag = False
         self.window = None
+        self.start_time = 0.0 #Time that pumps started
+        self.abort_time = 0.0 #Time that abort was triggered
+        self.current_cocktail = '' #Name of cocktail being made
 
         #Configure hardware and load data from cloud & local config files
         self.load_settings() #Load settings file
@@ -68,14 +72,9 @@ class Main():
                 GPIO.setup(self.pressure_pins[pump], GPIO.OUT)
                 GPIO.output(self.pressure_pins[pump], GPIO.HIGH)
 
-            '''
             #Setup abort pins
             GPIO.setup(self.abort_pins[0], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            GPIO.setup(self.abort_pins[1], GPIO.OUT)
-            GPIO.output(self.abort_pins[1], GPIO.HIGH)
-
-            GPIO.add_event_detect(self.abort_pins[0], GPIO.RISING, callback=self.abort_pumps)
-            '''
+            GPIO.add_event_detect(self.abort_pins[0], GPIO.RISING, callback=self.abort_pumps, bouncetime=200)
 
             print("Pins successfully setup!")
         except Exception as e:
@@ -115,7 +114,7 @@ class Main():
         
         self.polarity_pins = data['polarityPins']
         self.pressure_pins = data['pressurePins']
-        #self.abort_pins = data['abortPins']
+        self.abort_pins = data['abortPins']
 
 
     #Test function that runs all of the pumps for 3 seconds each
@@ -156,6 +155,7 @@ class Main():
     #Aborts all pump functions
     def abort_pumps(self, channel):
         print('ABORTING ALL FUNCTIONS')
+        self.abort_time = datetime.now().timestamp()
         #Turns off all pumps and solenoids
         for pump_num in self.pump_data:
             pin = self.pump_data[pump_num]['gpio']
@@ -164,6 +164,30 @@ class Main():
         #Turns of all pressure pumps
         for press_pin in self.pressure_pins:
             GPIO.output(pin, GPIO.HIGH)
+
+        #Fix all volume adjustments that were made
+        self.abort_fix_volumes()
+
+    #Fix volume adjustments that were made since the cocktail was aborted
+    def abort_fix_volumes(self):
+        
+        time_spent = self.abort_time - self.start_time
+        i = 0
+        for ingredient in self.cocktail_ingredients[self.current_cocktail]:
+            amount_desired = self.cocktail_amounts[self.current_cocktail][i] #Num of shots desired
+            pump_num = self.pump_map[ingredient]['pumpNum']
+            time_expected = amount_desired * self.pump_data[pump_num]['pumpTime']
+
+            #Nothing to change
+            if(time_expected <= time_spent):
+                i += 1
+                continue
+            
+            amount_dispensed = (time_spent / self.pump_data[pump_num]['pumpTime'])*self.shot_volume  #Total mL dispensed
+            amount_diff = amount_desired*self.shot_volume - amount_dispensed #Calculate amount not dispensed
+            self.pump_map[ingredient]['volume'] = str(float(self.pump_map[ingredient]['volume']) + amount_diff) #Add to amount stored in file
+            i += 1
+        self.write_pump_data()
 
     #Loads the list of ingredients to ignore when considering availablity & making cocktail
     def load_ignore_list(self):
@@ -395,6 +419,8 @@ class Main():
             i = 0
             wait_time = 0
             biggest_time = 0
+            self.current_cocktail = cocktail_name
+            self.start_time = datetime.now().timestamp()
             for ingredient in self.cocktail_ingredients[cocktail_name]:
                 #Skip pumping non-alcohol ingredients
                 if(self.alcohol_mode and ingredient not in self.alcohol_list):
@@ -435,6 +461,8 @@ class Main():
             print('Wait Time: ' + str(wait_time))
             time.sleep(wait_time)
             self.busy_flag = False
+            self.start_time = 0.0
+            self.current_cocktail = ''
             print("Done making cocktail!")
 
         except Exception as e:

@@ -4,5 +4,5 @@
         "10": 3
     },
     "polarityPins": [17, 27],
-    "abortPins": [23, 24]
+    "abortPins": [24]
 }
